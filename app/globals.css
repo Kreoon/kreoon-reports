@@ -1,0 +1,204 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════
+   KREOON REPORTS — Global Styles
+   Brand: #FF6B00 | Dark: #1a1a1a | Surface: #F5F5F5 | Cream: #FFF8F0
+═══════════════════════════════════════════════════ */
+
+/* ── Smooth scroll ── */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ── Selection color ── */
+::selection {
+  background-color: #FF6B00;
+  color: #ffffff;
+}
+::-moz-selection {
+  background-color: #FF6B00;
+  color: #ffffff;
+}
+
+/* ── Custom scrollbar (thin, orange thumb) ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+::-webkit-scrollbar-thumb {
+  background: #FF6B00;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #CC5500;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #FF6B00 #1a1a1a;
+}
+
+/* ═══════════════════════════════════════════════════
+   ANIMATION KEYFRAMES
+═══════════════════════════════════════════════════ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-kreoon {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(255, 107, 0, 0.4);
+  }
+  50% {
+    opacity: 0.85;
+    box-shadow: 0 0 0 8px rgba(255, 107, 0, 0);
+  }
+}
+
+@keyframes bounce-gentle {
+  0%, 100% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(-6px);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   ANIMATION UTILITY CLASSES
+═══════════════════════════════════════════════════ */
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.5s ease-out both;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.4s ease-out both;
+}
+
+.animate-pulse-kreoon {
+  animation: pulse-kreoon 2s ease-in-out infinite;
+}
+
+.animate-bounce-gentle {
+  animation: bounce-gentle 1.8s ease-in-out infinite;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.3s ease-out both;
+}
+
+/* ── Stagger delay helpers ── */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* ═══════════════════════════════════════════════════
+   BASE LAYER OVERRIDES
+═══════════════════════════════════════════════════ */
+
+@layer base {
+  body {
+    @apply bg-surface-dark text-white antialiased;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  a {
+    @apply transition-colors duration-200;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   COMPONENT UTILITIES
+═══════════════════════════════════════════════════ */
+
+@layer components {
+  /* Kreoon orange gradient text */
+  .text-gradient-kreoon {
+    background: linear-gradient(135deg, #FF6B00 0%, #FF9A40 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Shimmer loading skeleton */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      #2a2a2a 25%,
+      #3a3a3a 50%,
+      #2a2a2a 75%
+    );
+    background-size: 200% auto;
+    animation: shimmer 1.5s linear infinite;
+    border-radius: 4px;
+  }
+
+  /* Glass card */
+  .card-glass {
+    @apply bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl;
+  }
+
+  /* Section container */
+  .section-container {
+    @apply max-w-4xl mx-auto px-4 sm:px-6 py-10;
+  }
+
+  /* Kreoon divider */
+  .divider-kreoon {
+    @apply h-px w-full;
+    background: linear-gradient(90deg, transparent, #FF6B00, transparent);
+  }
+}
