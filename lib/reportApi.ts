@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { supabaseAdmin } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase';
 import type { ReportData } from '@/types/report';
 
 const REPORT_TTL_DAYS = 30;
@@ -23,7 +23,7 @@ export async function createReport(
     expires_at: expires_at.toISOString(),
   };
 
-  const { error } = await supabaseAdmin.from('reports').insert(row);
+  const { error } = await getSupabaseAdmin().from('reports').insert(row);
 
   if (error) {
     throw new Error(`Failed to insert report: ${error.message}`);
@@ -36,7 +36,7 @@ export async function createReport(
 // ─── Get ─────────────────────────────────────────────────────────────────────
 
 export async function getReport(id: string): Promise<ReportData | null> {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await getSupabaseAdmin()
     .from('reports')
     .select('*')
     .eq('id', id)
