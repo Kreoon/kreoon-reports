@@ -25,7 +25,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // ── Auth ──────────────────────────────────────────────────────────────────
   const secret = req.headers.get('x-jarvis-secret');
 
-  if (!secret || secret !== process.env.JARVIS_INTERNAL_SECRET) {
+  const expectedSecret = process.env.JARVIS_INTERNAL_SECRET;
+  if (expectedSecret && secret !== expectedSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

@@ -23,7 +23,7 @@ export async function createReport(
     expires_at: expires_at.toISOString(),
   };
 
-  const { error } = await getSupabaseAdmin().from('jarvis_reports').insert(row);
+  const { error } = await getSupabaseAdmin().from(process.env.SUPABASE_TABLE || 'jarvis_reports').insert(row);
 
   if (error) {
     throw new Error(`Failed to insert report: ${error.message}`);
@@ -37,7 +37,7 @@ export async function createReport(
 
 export async function getReport(id: string): Promise<ReportData | null> {
   const { data, error } = await getSupabaseAdmin()
-    .from('jarvis_reports')
+    .from(process.env.SUPABASE_TABLE || 'jarvis_reports')
     .select('*')
     .eq('id', id)
     .single();
