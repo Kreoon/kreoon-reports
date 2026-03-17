@@ -1,191 +1,271 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import type { ReportData } from '@/types/report';
-import type { ScriptLine } from '@/types/report';
+import { useState, useEffect, useCallback, Component, type ReactNode } from 'react';
+import type { ReportData, ScriptLine } from '@/types/report';
 
-// ── Existing report section components ───────────────
-import HeroSection from '@/components/report/HeroSection';
-import ScorecardSection from '@/components/report/ScorecardSection';
-import VisualAnalysisSection from '@/components/report/VisualAnalysisSection';
-import StrategicAnalysisSection from '@/components/report/StrategicAnalysisSection';
-import VerdictSection from '@/components/report/VerdictSection';
-import ReplicaPlanSection from '@/components/report/ReplicaPlanSection';
-import ProductionGuideSection from '@/components/report/ProductionGuideSection';
-import PublishingStrategySection from '@/components/report/PublishingStrategySection';
-import SuccessMetricsSection from '@/components/report/SuccessMetricsSection';
-import CTABanner from '@/components/report/CTABanner';
-import ReportFooter from '@/components/report/ReportFooter';
-import ScrollNavbar from '@/components/report/ScrollNavbar';
-import TeleprompterModal from '@/components/report/TeleprompterModal';
-
-// ── Types ─────────────────────────────────────────────
-interface ReportPageClientProps {
-  data: ReportData;
+// ── Error Boundary ──
+class ErrorBoundary extends Component<{ fallback: ReactNode; children: ReactNode }, { hasError: boolean }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) return this.props.fallback;
+    return this.props.children;
+  }
 }
 
-// Section IDs must match what each component renders and ScrollNavbar expects.
-// HeroSection has no id on its <section>, so we wrap it.
-// All others own their own id attributes internally.
-export const SECTION_IDS = [
-  'resumen',      // Hero — added by wrapper div
-  'scorecard',    // ScorecardSection owns this id
-  'visual',       // VisualAnalysisSection owns this id
-  'strategic',    // StrategicAnalysisSection owns this id
-  'verdict',      // VerdictSection owns this id
-  'replica',      // ReplicaPlanSection owns this id
-  'production',   // ProductionGuideSection owns this id
-  'publishing',   // PublishingStrategySection owns this id
-  'metrics',      // SuccessMetricsSection owns this id
-] as const;
+function SectionError({ name }: { name: string }) {
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 text-center text-zinc-400">
+        <p className="text-sm">Sección &quot;{name}&quot; no disponible para este reporte</p>
+      </div>
+    </div>
+  );
+}
 
-export type SectionId = (typeof SECTION_IDS)[number];
+// ── Lazy imports ──
+import dynamic from 'next/dynamic';
 
-// ── Component ─────────────────────────────────────────
-export default function ReportPageClient({ data }: ReportPageClientProps) {
-  // ── State ──
-  const [activeSection, setActiveSection] = useState<string>('resumen');
-  const [scrollProgress, setScrollProgress] = useState(0);
+const HeroSection = dynamic(() => import('@/components/report/HeroSection'), { ssr: false });
+const ScorecardSection = dynamic(() => import('@/components/report/ScorecardSection'), { ssr: false });
+const VisualAnalysisSection = dynamic(() => import('@/components/report/VisualAnalysisSection'), { ssr: false });
+const StrategicAnalysisSection = dynamic(() => import('@/components/report/StrategicAnalysisSection'), { ssr: false });
+const VerdictSection = dynamic(() => import('@/components/report/VerdictSection'), { ssr: false });
+const ReplicaPlanSection = dynamic(() => import('@/components/report/ReplicaPlanSection'), { ssr: false });
+const ProductionGuideSection = dynamic(() => import('@/components/report/ProductionGuideSection'), { ssr: false });
+const PublishingStrategySection = dynamic(() => import('@/components/report/PublishingStrategySection'), { ssr: false });
+const SuccessMetricsSection = dynamic(() => import('@/components/report/SuccessMetricsSection'), { ssr: false });
+const CTABanner = dynamic(() => import('@/components/report/CTABanner'), { ssr: false });
+const ReportFooter = dynamic(() => import('@/components/report/ReportFooter'), { ssr: false });
+const ScrollNavbar = dynamic(() => import('@/components/report/ScrollNavbar'), { ssr: false });
+const TeleprompterModal = dynamic(() => import('@/components/report/TeleprompterModal'), { ssr: false });
 
-  // Teleprompter
+// ── Safe defaults ──
+function safeScores(s: any) {
+  return {
+    hook: s?.hook ?? 0,
+    copy: s?.copy ?? 0,
+    strategy: s?.strategy ?? 0,
+    production: s?.production ?? 0,
+    virality: s?.virality ?? 0,
+    total: s?.total ?? 0,
+    replication_difficulty: s?.replication_difficulty ?? 5,
+  };
+}
+
+function safeMetrics(m: any) {
+  return {
+    views: m?.views ?? 0,
+    likes: m?.likes ?? 0,
+    comments: m?.comments ?? 0,
+    shares: m?.shares ?? 0,
+    engagement_rate: m?.engagement_rate ?? 0,
+  };
+}
+
+function safeVerdict(v: any) {
+  return {
+    works: v?.works ?? [],
+    improve: v?.improve ?? [],
+    opportunity: v?.opportunity ?? { title: 'Sin datos', description: 'Análisis no disponible' },
+  };
+}
+
+function safeGemini(g: any) {
+  return {
+    transcription: g?.transcription ?? g?.full_analysis ?? '',
+    scenes: g?.scenes ?? [],
+    production: g?.production ?? { lighting: '', audio: '', quality: 0, editing: '', cuts_per_minute: 0, aspect_ratio: '9:16' },
+    emotional_timeline: g?.emotional_timeline ?? [],
+    full_analysis: g?.full_analysis ?? '',
+  };
+}
+
+function safeStrategic(s: any) {
+  const defaultDim = { score: 0, description: 'No disponible', tags: [], recommendation: '' };
+  return {
+    structure: {
+      hook: s?.structure?.hook ?? defaultDim,
+      development: s?.structure?.development ?? defaultDim,
+      cta: s?.structure?.cta ?? defaultDim,
+      format: s?.structure?.format ?? defaultDim,
+    },
+    copy: {
+      formula: { ...defaultDim, detected: '', confidence: 0, ...s?.copy?.formula },
+      power_words: { ...defaultDim, words: [], ...s?.copy?.power_words },
+      mental_triggers: { ...defaultDim, used: [], missing: [], ...s?.copy?.mental_triggers },
+      tone: { ...defaultDim, brain: { reptilian: 33, limbic: 34, neocortex: 33 }, disc: 'I', ...s?.copy?.tone },
+    },
+    strategy: {
+      funnel: { ...defaultDim, stage: 'TOFU' as const, schwartz: 1, ...s?.strategy?.funnel },
+      pillar: { ...defaultDim, breakdown: [{ pillar: 'Educar' as const, percentage: 100 }], ...s?.strategy?.pillar },
+      sales_angle: { ...defaultDim, pain: '', desire: '', transformation: '', maslow: '', ...s?.strategy?.sales_angle },
+      virality: { ...defaultDim, pattern: '', emotion: '', shareability: 'medium', ...s?.strategy?.virality },
+    },
+    raw_text: s?.raw_text ?? '',
+  };
+}
+
+function safeProductionGuide(p: any) {
+  return {
+    checklist: p?.checklist ?? [],
+    script_timeline: p?.script_timeline ?? [],
+    setup: p?.setup ?? { camera: '', resolution: '', lighting: '', audio: '', background: '', editing: '' },
+    music: p?.music ?? { type: '', name: null, trending: false, volume_recommendation: '', source: '' },
+  };
+}
+
+function safePublishStrategy(p: any) {
+  return {
+    best_day: p?.best_day ?? '',
+    best_time: p?.best_time ?? '',
+    timezone: p?.timezone ?? 'America/Bogota',
+    reason: p?.reason ?? '',
+    post_actions: p?.post_actions ?? [],
+    caption_final: p?.caption_final ?? '',
+    hashtags_final: p?.hashtags_final ?? [],
+    repurposing: p?.repurposing ?? [],
+    week_plan: p?.week_plan ?? [],
+  };
+}
+
+function safeSuccessMetrics(s: any) {
+  return {
+    kpis: s?.kpis ?? [],
+    benchmarks: s?.benchmarks ?? { er_average: 3, good_post: 5, viral_threshold: 8, platform: 'instagram' },
+    evaluation_timeline: s?.evaluation_timeline ?? [],
+    plan_b: s?.plan_b ?? [],
+  };
+}
+
+// ── Component ──
+export default function ReportPageClient({ data }: { data: ReportData }) {
+  const [activeSection, setActiveSection] = useState('resumen');
   const [teleprompterOpen, setTeleprompterOpen] = useState(false);
   const [teleprompterScript, setTeleprompterScript] = useState<ScriptLine[]>([]);
-  const [teleprompterVersionLabel, setTeleprompterVersionLabel] = useState('');
+  const [teleprompterVersion, setTeleprompterVersion] = useState('');
 
-  // ── IntersectionObserver — track active section ──
+  const handleOpenTeleprompter = useCallback((version: string, script: ScriptLine[]) => {
+    setTeleprompterScript(script);
+    setTeleprompterVersion(version);
+    setTeleprompterOpen(true);
+  }, []);
+
+  // Intersection observer for active section
   useEffect(() => {
-    const observers: IntersectionObserver[] = [];
+    const sections = ['resumen', 'scorecard', 'visual', 'strategic', 'verdict', 'replica', 'production', 'publishing', 'metrics'];
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+          }
+        }
+      },
+      { rootMargin: '-52px 0px -40% 0px', threshold: 0.1 }
+    );
 
-    SECTION_IDS.forEach((id) => {
+    sections.forEach((id) => {
       const el = document.getElementById(id);
-      if (!el) return;
-
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              setActiveSection(id);
-            }
-          });
-        },
-        { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
-      );
-
-      observer.observe(el);
-      observers.push(observer);
+      if (el) observer.observe(el);
     });
 
-    return () => observers.forEach((o) => o.disconnect());
+    return () => observer.disconnect();
   }, []);
 
-  // ── Scroll progress bar ──
-  useEffect(() => {
-    const handleScroll = () => {
-      const doc = document.documentElement;
-      const scrollHeight = doc.scrollHeight - doc.clientHeight;
-      const progress = scrollHeight > 0 ? (window.scrollY / scrollHeight) * 100 : 0;
-      setScrollProgress(Math.min(100, Math.max(0, progress)));
-    };
+  const scores = safeScores(data.scores);
+  const metrics = safeMetrics(data.metrics);
+  const verdict = safeVerdict(data.verdict);
+  const gemini = safeGemini(data.gemini_analysis);
+  const strategic = safeStrategic(data.strategic_analysis);
+  const productionGuide = safeProductionGuide(data.production_guide);
+  const publishStrategy = safePublishStrategy(data.publish_strategy);
+  const successMetrics = safeSuccessMetrics(data.success_metrics);
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // ── Teleprompter handlers ──
-  const handleOpenTeleprompter = useCallback(
-    (version: string, script: ScriptLine[]) => {
-      setTeleprompterScript(script);
-      setTeleprompterVersionLabel(version);
-      setTeleprompterOpen(true);
-    },
-    []
-  );
-
-  const handleCloseTeleprompter = useCallback(() => {
-    setTeleprompterOpen(false);
-  }, []);
-
-  // ── Render ──
   return (
     <>
-      {/* ── Scroll progress bar (top of viewport) ── */}
-      <div
-        className="fixed top-0 left-0 z-[60] h-[3px] bg-kreoon transition-[width] duration-100"
-        style={{ width: `${scrollProgress}%` }}
-        role="progressbar"
-        aria-valuenow={Math.round(scrollProgress)}
-        aria-valuemin={0}
-        aria-valuemax={100}
-      />
-
-      {/* ── Sticky nav bar (appears after scrolling past hero) ── */}
       <ScrollNavbar activeSection={activeSection} />
 
-      {/* ── Main content ── */}
-      <main>
-
-        {/* Hero — wrapped to give it the "resumen" scroll target */}
-        <div id="resumen" className="scroll-mt-0">
+      <div id="resumen">
+        <ErrorBoundary fallback={<SectionError name="Hero" />}>
           <HeroSection data={data} />
-        </div>
+        </ErrorBoundary>
+      </div>
 
-        {/* Scorecard — owns id="scorecard" */}
-        <ScorecardSection
-          scores={data.scores}
-          metrics={data.metrics}
-          verdict={data.verdict}
-        />
+      <ErrorBoundary fallback={<SectionError name="Scorecard" />}>
+        <ScorecardSection scores={scores} metrics={metrics} verdict={verdict} />
+      </ErrorBoundary>
 
-        {/* Visual Analysis — owns id="visual" */}
-        <VisualAnalysisSection gemini={data.gemini_analysis} />
+      {gemini.full_analysis && (
+        <ErrorBoundary fallback={<SectionError name="Análisis Visual" />}>
+          <VisualAnalysisSection gemini={gemini} />
+        </ErrorBoundary>
+      )}
 
-        {/* Strategic Analysis — owns id="strategic" */}
-        <StrategicAnalysisSection
-          analysis={data.strategic_analysis}
-          scores={data.scores}
-        />
+      {strategic.raw_text && (
+        <ErrorBoundary fallback={<SectionError name="12 Dimensiones" />}>
+          <StrategicAnalysisSection analysis={strategic} scores={scores} />
+        </ErrorBoundary>
+      )}
 
-        {/* Verdict — owns id="verdict" */}
-        <VerdictSection
-          verdict={data.verdict}
-          metrics={data.metrics}
-        />
+      <ErrorBoundary fallback={<SectionError name="Veredicto" />}>
+        <VerdictSection verdict={verdict} metrics={metrics} />
+      </ErrorBoundary>
 
-        {/* Replica Plan — owns id="replica" */}
-        <ReplicaPlanSection
-          replicas={data.replicas}
-          wizard={data.wizard_config}
-          onOpenTeleprompter={handleOpenTeleprompter}
-          repurposing={data.publish_strategy.repurposing}
-        />
+      {data.replicas && (
+        <ErrorBoundary fallback={<SectionError name="Plan de Réplica" />}>
+          <ReplicaPlanSection
+            replicas={data.replicas}
+            wizard={data.wizard_config}
+            onOpenTeleprompter={handleOpenTeleprompter}
+          />
+        </ErrorBoundary>
+      )}
 
-        {/* Production Guide — owns id="production" */}
-        <ProductionGuideSection guide={data.production_guide} />
+      {productionGuide.script_timeline.length > 0 && (
+        <ErrorBoundary fallback={<SectionError name="Guía de Producción" />}>
+          <ProductionGuideSection guide={productionGuide} />
+        </ErrorBoundary>
+      )}
 
-        {/* Publishing Strategy — owns id="publishing" */}
-        <PublishingStrategySection strategy={data.publish_strategy} />
+      {publishStrategy.best_day && (
+        <ErrorBoundary fallback={<SectionError name="Publicación" />}>
+          <PublishingStrategySection strategy={publishStrategy} />
+        </ErrorBoundary>
+      )}
 
-        {/* Success Metrics — owns id="metrics" */}
-        <SuccessMetricsSection metrics={data.success_metrics} />
+      {successMetrics.kpis.length > 0 && (
+        <ErrorBoundary fallback={<SectionError name="Métricas" />}>
+          <SuccessMetricsSection metrics={successMetrics} />
+        </ErrorBoundary>
+      )}
 
-        {/* CTA Banner */}
+      <ErrorBoundary fallback={null}>
         <CTABanner />
+      </ErrorBoundary>
 
-        {/* Footer */}
+      <ErrorBoundary fallback={null}>
         <ReportFooter
           reportId={data.id}
-          generatedDate={data.created_at}
+          generatedDate={new Date(data.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
         />
+      </ErrorBoundary>
 
-      </main>
-
-      {/* ── Teleprompter Modal ── */}
-      <TeleprompterModal
-        isOpen={teleprompterOpen}
-        onClose={handleCloseTeleprompter}
-        script={teleprompterScript}
-        versionLabel={teleprompterVersionLabel}
-      />
+      {teleprompterOpen && (
+        <ErrorBoundary fallback={null}>
+          <TeleprompterModal
+            isOpen={teleprompterOpen}
+            onClose={() => setTeleprompterOpen(false)}
+            script={teleprompterScript}
+            versionLabel={teleprompterVersion}
+          />
+        </ErrorBoundary>
+      )}
     </>
   );
 }
