@@ -22,7 +22,7 @@ const SCORE_BARS: { key: keyof Omit<Scores, "total" | "replication_difficulty">;
 function scoreColor(score: number): string {
   if (score >= 9)  return "#FFB800"; // gold
   if (score >= 7)  return "#22C55E"; // green
-  if (score >= 4)  return "#F97316"; // orange
+  if (score >= 4)  return "#7c3aed"; // purple
   return "#EF4444";                  // red
 }
 
@@ -101,6 +101,8 @@ export default function ScorecardSection({ scores, metrics, verdict }: Scorecard
   }, []);
 
   const totalColor = scoreColor(scores.total);
+  const allScoresZero = scores.total === 0;
+  const hasVerdictData = verdict.works.length > 0 || verdict.improve.length > 0;
   const erFormatted =
     metrics.engagement_rate !== undefined
       ? `${metrics.engagement_rate.toFixed(2)}%`
@@ -110,153 +112,174 @@ export default function ScorecardSection({ scores, metrics, verdict }: Scorecard
     <section
       id="scorecard"
       ref={ref}
-      className="w-full max-w-3xl mx-auto px-4 py-10 sm:py-14"
+      className="w-full max-w-4xl mx-auto px-4 py-10 sm:py-14"
     >
-      <div className="bg-[#1a1a1a] rounded-2xl p-6 sm:p-8 space-y-8">
+      <div className="card-premium p-6 sm:p-8 space-y-8">
 
         {/* ── Section header ── */}
         <div>
-          <p className="text-xs uppercase tracking-widest text-orange-500 font-semibold mb-1">
+          <p className="text-xs uppercase tracking-widest text-purple-500 font-semibold mb-1">
             Análisis de rendimiento
           </p>
           <h2 className="text-2xl sm:text-3xl font-bold text-white">Scorecard</h2>
         </div>
 
-        {/* ── Score bars ── */}
-        <div className="space-y-4">
-          {SCORE_BARS.map(({ key, label }, i) => (
-            <ScoreBar
-              key={key}
-              label={label}
-              score={scores[key]}
-              index={i}
-              animate={hasAnimated}
-            />
-          ))}
-        </div>
-
-        {/* ── Divider ── */}
-        <div className="h-px bg-white/10" />
-
-        {/* ── Total score row ── */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          <span className="w-24 sm:w-28 text-sm font-bold text-white shrink-0">Total</span>
-          <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full rounded-full"
-              style={{ backgroundColor: totalColor }}
-              initial={{ width: 0 }}
-              animate={{ width: hasAnimated ? `${scores.total * 10}%` : 0 }}
-              transition={{ duration: 0.8, delay: 0.55, ease: "easeOut" }}
-            />
+        {allScoresZero ? (
+          /* ── Scores not available ── */
+          <div className="card-premium flex flex-col items-center justify-center gap-3 px-6 py-10 text-center">
+            <BarChart2 size={32} className="text-purple-500/60" />
+            <p className="text-base font-semibold text-gray-400">
+              Análisis de scoring en desarrollo
+            </p>
+            <p className="text-sm text-gray-500 max-w-sm">
+              Los scores detallados estarán disponibles en futuras versiones del análisis
+            </p>
           </div>
-          <span
-            className="w-8 text-right text-base font-extrabold tabular-nums shrink-0"
-            style={{ color: totalColor }}
-          >
-            {scores.total}
-          </span>
-        </div>
+        ) : (
+          <>
+            {/* ── Score bars ── */}
+            <div className="space-y-4">
+              {SCORE_BARS.map(({ key, label }, i) => (
+                <ScoreBar
+                  key={key}
+                  label={label}
+                  score={scores[key]}
+                  index={i}
+                  animate={hasAnimated}
+                />
+              ))}
+            </div>
 
-        {/* ── Replication badge ── */}
-        <div>
-          <span
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border"
-            style={{
-              borderColor: scoreColor(scores.replication_difficulty),
-              color: scoreColor(scores.replication_difficulty),
-              backgroundColor: `${scoreColor(scores.replication_difficulty)}15`,
-            }}
-          >
-            <BarChart2 size={14} />
-            Nivel para replicar: {scores.replication_difficulty}/10
-          </span>
-        </div>
+            {/* ── Divider ── */}
+            <div className="divider-glow" />
+
+            {/* ── Total score row ── */}
+            <div className="flex items-center gap-3 sm:gap-4">
+              <span className="w-24 sm:w-28 text-sm font-bold text-white shrink-0">Total</span>
+              <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{ backgroundColor: totalColor }}
+                  initial={{ width: 0 }}
+                  animate={{ width: hasAnimated ? `${scores.total * 10}%` : 0 }}
+                  transition={{ duration: 0.8, delay: 0.55, ease: "easeOut" }}
+                />
+              </div>
+              <span
+                className="w-8 text-right text-base font-extrabold tabular-nums shrink-0"
+                style={{ color: totalColor }}
+              >
+                {scores.total}
+              </span>
+            </div>
+
+            {/* ── Replication badge ── */}
+            <div>
+              <span
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border"
+                style={{
+                  borderColor: scoreColor(scores.replication_difficulty),
+                  color: scoreColor(scores.replication_difficulty),
+                  backgroundColor: `${scoreColor(scores.replication_difficulty)}15`,
+                }}
+              >
+                <BarChart2 size={14} />
+                Nivel para replicar: {scores.replication_difficulty}/10
+              </span>
+            </div>
+          </>
+        )}
 
         {/* ── Divider ── */}
-        <div className="h-px bg-white/10" />
+        <div className="divider-glow" />
 
         {/* ── Verdict badges ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {hasVerdictData && (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
-          {/* Strength — first item of works[] */}
-          {verdict.works[0] && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: hasAnimated ? 1 : 0, y: hasAnimated ? 0 : 12 }}
-              transition={{ duration: 0.4, delay: 0.6 }}
-              className="bg-[#0f1a12] border-l-4 border-green-500 rounded-lg p-4 space-y-1"
-            >
-              <div className="flex items-center gap-2 text-green-400 font-semibold text-xs uppercase tracking-wide">
-                <TrendingUp size={13} />
-                Fortaleza
-              </div>
-              <p className="text-white text-sm font-medium leading-snug">
-                {verdict.works[0].title}
-              </p>
-              <p className="text-gray-400 text-xs leading-relaxed">
-                {verdict.works[0].description}
-              </p>
-            </motion.div>
-          )}
+              {/* Strength — first item of works[] */}
+              {verdict.works[0] && (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: hasAnimated ? 1 : 0, y: hasAnimated ? 0 : 12 }}
+                  transition={{ duration: 0.4, delay: 0.6 }}
+                  className="bg-[#0f1a12] border-l-4 border-green-500 rounded-lg p-4 space-y-1"
+                >
+                  <div className="flex items-center gap-2 text-green-400 font-semibold text-xs uppercase tracking-wide">
+                    <TrendingUp size={13} />
+                    Fortaleza
+                  </div>
+                  <p className="text-white text-sm font-medium leading-snug">
+                    {verdict.works[0].title}
+                  </p>
+                  <p className="text-gray-400 text-xs leading-relaxed">
+                    {verdict.works[0].description}
+                  </p>
+                </motion.div>
+              )}
 
-          {/* Weakness — first item of improve[] */}
-          {verdict.improve[0] && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: hasAnimated ? 1 : 0, y: hasAnimated ? 0 : 12 }}
-              transition={{ duration: 0.4, delay: 0.72 }}
-              className="bg-[#1a0f0f] border-l-4 border-red-500 rounded-lg p-4 space-y-1"
-            >
-              <div className="flex items-center gap-2 text-red-400 font-semibold text-xs uppercase tracking-wide">
-                <AlertTriangle size={13} />
-                Debilidad
-              </div>
-              <p className="text-white text-sm font-medium leading-snug">
-                {verdict.improve[0].title}
-              </p>
-              <p className="text-gray-400 text-xs leading-relaxed">
-                {verdict.improve[0].description}
-              </p>
-            </motion.div>
-          )}
+              {/* Weakness — first item of improve[] */}
+              {verdict.improve[0] && (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: hasAnimated ? 1 : 0, y: hasAnimated ? 0 : 12 }}
+                  transition={{ duration: 0.4, delay: 0.72 }}
+                  className="bg-[#1a0f0f] border-l-4 border-red-500 rounded-lg p-4 space-y-1"
+                >
+                  <div className="flex items-center gap-2 text-red-400 font-semibold text-xs uppercase tracking-wide">
+                    <AlertTriangle size={13} />
+                    Debilidad
+                  </div>
+                  <p className="text-white text-sm font-medium leading-snug">
+                    {verdict.improve[0].title}
+                  </p>
+                  <p className="text-gray-400 text-xs leading-relaxed">
+                    {verdict.improve[0].description}
+                  </p>
+                </motion.div>
+              )}
 
-          {/* Opportunity */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: hasAnimated ? 1 : 0, y: hasAnimated ? 0 : 12 }}
-            transition={{ duration: 0.4, delay: 0.84 }}
-            className="bg-[#0d1220] border-l-4 border-blue-500 rounded-lg p-4 space-y-1"
-          >
-            <div className="flex items-center gap-2 text-blue-400 font-semibold text-xs uppercase tracking-wide">
-              <Lightbulb size={13} />
-              Oportunidad
+              {/* Opportunity */}
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: hasAnimated ? 1 : 0, y: hasAnimated ? 0 : 12 }}
+                transition={{ duration: 0.4, delay: 0.84 }}
+                className="bg-[#0d1220] border-l-4 border-blue-500 rounded-lg p-4 space-y-1"
+              >
+                <div className="flex items-center gap-2 text-blue-400 font-semibold text-xs uppercase tracking-wide">
+                  <Lightbulb size={13} />
+                  Oportunidad
+                </div>
+                <p className="text-white text-sm font-medium leading-snug">
+                  {verdict.opportunity.title}
+                </p>
+                <p className="text-gray-400 text-xs leading-relaxed">
+                  {verdict.opportunity.description}
+                </p>
+              </motion.div>
+
             </div>
-            <p className="text-white text-sm font-medium leading-snug">
-              {verdict.opportunity.title}
-            </p>
-            <p className="text-gray-400 text-xs leading-relaxed">
-              {verdict.opportunity.description}
-            </p>
-          </motion.div>
 
-        </div>
-
-        {/* ── Divider ── */}
-        <div className="h-px bg-white/10" />
+            {/* ── Divider ── */}
+            <div className="divider-glow" />
+          </>
+        )}
 
         {/* ── Metrics row ── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
 
-          <div className="bg-white/5 rounded-xl p-4 flex flex-col items-center gap-1">
-            <Eye size={16} className="text-orange-400" />
-            <span className="text-xs text-gray-400 uppercase tracking-wide">Vistas</span>
-            <span className="text-lg font-bold text-white tabular-nums">
-              {formatNumber(metrics.views)}
-            </span>
-          </div>
+          {(metrics.views != null && metrics.views > 0) && (
+            <div className="card-premium bg-white/[0.03] p-4 flex flex-col items-center gap-1">
+              <Eye size={16} className="text-purple-400" />
+              <span className="text-xs text-gray-400 uppercase tracking-wide">Vistas</span>
+              <span className="text-lg font-bold text-white tabular-nums">
+                {formatNumber(metrics.views)}
+              </span>
+            </div>
+          )}
 
-          <div className="bg-white/5 rounded-xl p-4 flex flex-col items-center gap-1">
+          <div className="card-premium bg-white/[0.03] p-4 flex flex-col items-center gap-1">
             <Heart size={16} className="text-pink-400" />
             <span className="text-xs text-gray-400 uppercase tracking-wide">Likes</span>
             <span className="text-lg font-bold text-white tabular-nums">
@@ -264,7 +287,7 @@ export default function ScorecardSection({ scores, metrics, verdict }: Scorecard
             </span>
           </div>
 
-          <div className="bg-white/5 rounded-xl p-4 flex flex-col items-center gap-1">
+          <div className="card-premium bg-white/[0.03] p-4 flex flex-col items-center gap-1">
             <MessageCircle size={16} className="text-blue-400" />
             <span className="text-xs text-gray-400 uppercase tracking-wide">Comentarios</span>
             <span className="text-lg font-bold text-white tabular-nums">
@@ -272,7 +295,7 @@ export default function ScorecardSection({ scores, metrics, verdict }: Scorecard
             </span>
           </div>
 
-          <div className="bg-white/5 rounded-xl p-4 flex flex-col items-center gap-1">
+          <div className="card-premium bg-white/[0.03] p-4 flex flex-col items-center gap-1">
             <BarChart2 size={16} className="text-green-400" />
             <span className="text-xs text-gray-400 uppercase tracking-wide">ER%</span>
             <span className="text-lg font-bold text-white tabular-nums">

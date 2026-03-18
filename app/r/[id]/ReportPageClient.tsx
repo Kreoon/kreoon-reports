@@ -151,10 +151,26 @@ export default function ReportPageClient({ data }: { data: ReportData }) {
   const [teleprompterVersion, setTeleprompterVersion] = useState('');
 
   const handleOpenTeleprompter = useCallback((version: string, script: ScriptLine[]) => {
-    setTeleprompterScript(script);
+    let finalScript = script;
+
+    // Fallback: if script array is empty, parse teleprompter_script raw text
+    if ((!finalScript || finalScript.length === 0) && data.teleprompter_script) {
+      finalScript = data.teleprompter_script
+        .split(/\n/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+        .map((line) => ({
+          time: "",
+          text: line,
+          direction: "",
+          section: "development" as const,
+        }));
+    }
+
+    setTeleprompterScript(finalScript);
     setTeleprompterVersion(version);
     setTeleprompterOpen(true);
-  }, []);
+  }, [data.teleprompter_script]);
 
   // Intersection observer for active section
   useEffect(() => {
@@ -191,70 +207,87 @@ export default function ReportPageClient({ data }: { data: ReportData }) {
     <>
       <ScrollNavbar activeSection={activeSection} />
 
-      <div id="resumen">
-        <ErrorBoundary fallback={<SectionError name="Hero" />}>
-          <HeroSection data={data} />
+      <div className="bg-mesh-gradient min-h-screen">
+        <div id="resumen">
+          <ErrorBoundary fallback={<SectionError name="Hero" />}>
+            <HeroSection data={data} />
+          </ErrorBoundary>
+        </div>
+
+        <div className="divider-glow max-w-4xl mx-auto my-2" />
+
+        <div id="analysis-sections">
+          <ErrorBoundary fallback={<SectionError name="Scorecard" />}>
+            <ScorecardSection scores={scores} metrics={metrics} verdict={verdict} />
+          </ErrorBoundary>
+        </div>
+
+        <div className="divider-glow max-w-4xl mx-auto my-2" />
+
+        {gemini.full_analysis && (
+          <ErrorBoundary fallback={<SectionError name="Análisis Visual" />}>
+            <VisualAnalysisSection gemini={gemini} />
+          </ErrorBoundary>
+        )}
+
+        {gemini.full_analysis && strategic.raw_text && (
+          <div className="divider-glow max-w-4xl mx-auto my-2" />
+        )}
+
+        {strategic.raw_text && (
+          <ErrorBoundary fallback={<SectionError name="12 Dimensiones" />}>
+            <StrategicAnalysisSection analysis={strategic} scores={scores} />
+          </ErrorBoundary>
+        )}
+
+        <div className="divider-glow max-w-4xl mx-auto my-2" />
+
+        <ErrorBoundary fallback={<SectionError name="Veredicto" />}>
+          <VerdictSection verdict={verdict} metrics={metrics} rawAnalysis={strategic.raw_text} />
         </ErrorBoundary>
-      </div>
 
-      <ErrorBoundary fallback={<SectionError name="Scorecard" />}>
-        <ScorecardSection scores={scores} metrics={metrics} verdict={verdict} />
-      </ErrorBoundary>
+        <div className="divider-glow max-w-4xl mx-auto my-2" />
 
-      {gemini.full_analysis && (
-        <ErrorBoundary fallback={<SectionError name="Análisis Visual" />}>
-          <VisualAnalysisSection gemini={gemini} />
+        {data.replicas && (
+          <ErrorBoundary fallback={<SectionError name="Plan de Réplica" />}>
+            <ReplicaPlanSection
+              replicas={data.replicas}
+              wizard={data.wizard_config}
+              onOpenTeleprompter={handleOpenTeleprompter}
+              teleprompterScript={data.teleprompter_script}
+            />
+          </ErrorBoundary>
+        )}
+
+        {productionGuide.script_timeline.length > 0 && (
+          <ErrorBoundary fallback={<SectionError name="Guía de Producción" />}>
+            <ProductionGuideSection guide={productionGuide} />
+          </ErrorBoundary>
+        )}
+
+        {publishStrategy.best_day && (
+          <ErrorBoundary fallback={<SectionError name="Publicación" />}>
+            <PublishingStrategySection strategy={publishStrategy} />
+          </ErrorBoundary>
+        )}
+
+        {successMetrics.kpis.length > 0 && (
+          <ErrorBoundary fallback={<SectionError name="Métricas" />}>
+            <SuccessMetricsSection metrics={successMetrics} />
+          </ErrorBoundary>
+        )}
+
+        <ErrorBoundary fallback={null}>
+          <CTABanner />
         </ErrorBoundary>
-      )}
 
-      {strategic.raw_text && (
-        <ErrorBoundary fallback={<SectionError name="12 Dimensiones" />}>
-          <StrategicAnalysisSection analysis={strategic} scores={scores} />
-        </ErrorBoundary>
-      )}
-
-      <ErrorBoundary fallback={<SectionError name="Veredicto" />}>
-        <VerdictSection verdict={verdict} metrics={metrics} />
-      </ErrorBoundary>
-
-      {data.replicas && (
-        <ErrorBoundary fallback={<SectionError name="Plan de Réplica" />}>
-          <ReplicaPlanSection
-            replicas={data.replicas}
-            wizard={data.wizard_config}
-            onOpenTeleprompter={handleOpenTeleprompter}
+        <ErrorBoundary fallback={null}>
+          <ReportFooter
+            reportId={data.id}
+            generatedDate={new Date(data.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
           />
         </ErrorBoundary>
-      )}
-
-      {productionGuide.script_timeline.length > 0 && (
-        <ErrorBoundary fallback={<SectionError name="Guía de Producción" />}>
-          <ProductionGuideSection guide={productionGuide} />
-        </ErrorBoundary>
-      )}
-
-      {publishStrategy.best_day && (
-        <ErrorBoundary fallback={<SectionError name="Publicación" />}>
-          <PublishingStrategySection strategy={publishStrategy} />
-        </ErrorBoundary>
-      )}
-
-      {successMetrics.kpis.length > 0 && (
-        <ErrorBoundary fallback={<SectionError name="Métricas" />}>
-          <SuccessMetricsSection metrics={successMetrics} />
-        </ErrorBoundary>
-      )}
-
-      <ErrorBoundary fallback={null}>
-        <CTABanner />
-      </ErrorBoundary>
-
-      <ErrorBoundary fallback={null}>
-        <ReportFooter
-          reportId={data.id}
-          generatedDate={new Date(data.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
-        />
-      </ErrorBoundary>
+      </div>
 
       {teleprompterOpen && (
         <ErrorBoundary fallback={null}>

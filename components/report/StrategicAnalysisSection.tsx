@@ -30,7 +30,7 @@ function ScoreBadge({ score }: { score: number }) {
       : score >= 7
       ? "#22C55E"
       : score >= 4
-      ? "#F97316"
+      ? "#7c3aed"
       : "#EF4444";
   return (
     <span
@@ -46,13 +46,13 @@ function ScoreBadge({ score }: { score: number }) {
 function scoreColor(score: number): string {
   if (score >= 9) return "#FFB800";
   if (score >= 7) return "#22C55E";
-  if (score >= 4) return "#F97316";
+  if (score >= 4) return "#7c3aed";
   return "#EF4444";
 }
 
 function effectivenessLevel(score: number): { label: string; color: string } {
   if (score >= 8) return { label: "ALTO", color: "#22C55E" };
-  if (score >= 5) return { label: "MED", color: "#F97316" };
+  if (score >= 5) return { label: "MED", color: "#7c3aed" };
   return { label: "BAJO", color: "#EF4444" };
 }
 
@@ -105,14 +105,14 @@ function DimensionCard({ icon, title, score, preview, detail, index = 0 }: CardP
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay: index * 0.06 }}
-      className="bg-[#1a1a1a] rounded-xl border border-white/8 overflow-hidden"
+      className="bg-[#1a1a1a] rounded-xl border border-white/[0.08] overflow-hidden"
     >
       {/* Header row — always visible */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-white/4 transition-colors"
+        className="w-full flex items-center gap-3 px-4 py-4 text-left hover:bg-white/[0.04] transition-colors"
       >
-        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/8 flex items-center justify-center text-gray-400">
+        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/[0.08] flex items-center justify-center text-gray-400">
           {icon}
         </div>
         <span className="flex-1 text-sm font-semibold text-white truncate">{title}</span>
@@ -142,7 +142,7 @@ function DimensionCard({ icon, title, score, preview, detail, index = 0 }: CardP
         transition={{ duration: 0.3, ease: "easeInOut" }}
         style={{ overflow: "hidden" }}
       >
-        <div className="px-4 pb-4 pt-1 border-t border-white/8 space-y-3">{detail}</div>
+        <div className="px-4 pb-4 pt-1 border-t border-white/[0.08] space-y-3">{detail}</div>
       </motion.div>
     </motion.div>
   );
@@ -155,7 +155,7 @@ type TabId = "estructura" | "copy" | "estrategia";
 
 const TABS: { id: TabId; label: string; color: string }[] = [
   { id: "estructura", label: "ESTRUCTURA", color: "#3B82F6" },
-  { id: "copy", label: "COPY", color: "#F97316" },
+  { id: "copy", label: "COPY", color: "#7c3aed" },
   { id: "estrategia", label: "ESTRATEGIA", color: "#22C55E" },
 ];
 
@@ -163,7 +163,7 @@ const TABS: { id: TabId; label: string; color: string }[] = [
 const WORD_CATEGORY_COLORS: Record<PowerWord["category"], string> = {
   urgency: "#EF4444",
   trust: "#22C55E",
-  desire: "#F97316",
+  desire: "#7c3aed",
   ease: "#3B82F6",
   fear: "#A855F7",
   social: "#EC4899",
@@ -234,7 +234,7 @@ function StructureBlock({ s }: { s: StrategicAnalysis["structure"] }) {
           <p className="text-xs text-gray-400 leading-relaxed">
             {s.development.description}
             {s.development.description.toLowerCase().includes("pastor") && (
-              <span className="ml-1 inline-block px-1.5 py-0.5 rounded text-xs font-bold text-orange-300 bg-orange-500/15 border border-orange-500/30">
+              <span className="ml-1 inline-block px-1.5 py-0.5 rounded text-xs font-bold text-purple-300 bg-purple-500/15 border border-purple-500/30">
                 PASTOR
               </span>
             )}
@@ -242,14 +242,14 @@ function StructureBlock({ s }: { s: StrategicAnalysis["structure"] }) {
           {s.development.tags && s.development.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {s.development.tags.map((t) => (
-                <Tag_ key={t} color="#F97316">{t}</Tag_>
+                <Tag_ key={t} color="#7c3aed">{t}</Tag_>
               ))}
             </div>
           )}
           {s.development.recommendation && (
-            <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-3">
-              <p className="text-xs text-orange-300 leading-relaxed">
-                <span className="font-semibold text-orange-400">Recomendación: </span>
+            <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3">
+              <p className="text-xs text-purple-300 leading-relaxed">
+                <span className="font-semibold text-purple-400">Recomendación: </span>
                 {s.development.recommendation}
               </p>
             </div>
@@ -345,7 +345,7 @@ function StructureBlock({ s }: { s: StrategicAnalysis["structure"] }) {
                 {repurposing.map((r) => (
                   <span
                     key={r}
-                    className="inline-block px-2.5 py-1 rounded-full text-xs font-medium bg-white/8 text-gray-300 border border-white/10"
+                    className="inline-block px-2.5 py-1 rounded-full text-xs font-medium bg-white/[0.08] text-gray-300 border border-white/10"
                   >
                     {r}
                   </span>
@@ -385,12 +385,12 @@ function CopyBlock({ c }: { c: StrategicAnalysis["copy"] }) {
       icon={<FileText size={15} />}
       title="Fórmula"
       score={c.formula.score}
-      preview={<Tag_ color="#F97316">{c.formula.detected}</Tag_>}
+      preview={<Tag_ color="#7c3aed">{c.formula.detected}</Tag_>}
       detail={
         <div className="space-y-3">
           {/* Big formula name */}
-          <div className="flex items-center justify-center py-3 rounded-xl bg-orange-500/10 border border-orange-500/20">
-            <span className="text-2xl font-black tracking-widest text-orange-400">
+          <div className="flex items-center justify-center py-3 rounded-xl bg-purple-500/10 border border-purple-500/20">
+            <span className="text-2xl font-black tracking-widest text-purple-400">
               {c.formula.detected}
             </span>
           </div>
@@ -398,21 +398,21 @@ function CopyBlock({ c }: { c: StrategicAnalysis["copy"] }) {
           <ScoreBar
             label="Confianza"
             value={c.formula.confidence}
-            color="#F97316"
+            color="#7c3aed"
           />
           {/* Description (step breakdown) */}
           <p className="text-xs text-gray-400 leading-relaxed">{c.formula.description}</p>
           {c.formula.tags && c.formula.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {c.formula.tags.map((t) => (
-                <Tag_ key={t} color="#F97316">{t}</Tag_>
+                <Tag_ key={t} color="#7c3aed">{t}</Tag_>
               ))}
             </div>
           )}
           {c.formula.recommendation && (
-            <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-3">
-              <p className="text-xs text-orange-300 leading-relaxed">
-                <span className="font-semibold text-orange-400">Recomendación: </span>
+            <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3">
+              <p className="text-xs text-purple-300 leading-relaxed">
+                <span className="font-semibold text-purple-400">Recomendación: </span>
                 {c.formula.recommendation}
               </p>
             </div>
@@ -532,7 +532,7 @@ function CopyBlock({ c }: { c: StrategicAnalysis["copy"] }) {
           <div className="space-y-2">
             <p className="text-xs text-gray-500 uppercase tracking-wide">Cerebro Triuno</p>
             <ScoreBar label="Reptiliano" value={brain.reptilian} color="#EF4444" />
-            <ScoreBar label="Límbico" value={brain.limbic} color="#F97316" />
+            <ScoreBar label="Límbico" value={brain.limbic} color="#7c3aed" />
             <ScoreBar label="Neocortex" value={brain.neocortex} color="#3B82F6" />
           </div>
           {/* DISC Badge */}
@@ -568,7 +568,7 @@ function CopyBlock({ c }: { c: StrategicAnalysis["copy"] }) {
 // ─── Strategy Block ────────────────────────────────────────────────────────
 const PILLAR_COLORS: Record<string, string> = {
   Educar: "#3B82F6",
-  Entretener: "#F97316",
+  Entretener: "#7c3aed",
   Inspirar: "#A855F7",
   Vender: "#22C55E",
 };
@@ -578,7 +578,7 @@ function StrategyBlock({ s }: { s: StrategicAnalysis["strategy"] }) {
   const funnelLevels: ("TOFU" | "MOFU" | "BOFU")[] = ["TOFU", "MOFU", "BOFU"];
   const funnelColors: Record<string, string> = {
     TOFU: "#3B82F6",
-    MOFU: "#F97316",
+    MOFU: "#7c3aed",
     BOFU: "#22C55E",
   };
   const funnelLabels: Record<string, string> = {
@@ -712,7 +712,7 @@ function StrategyBlock({ s }: { s: StrategicAnalysis["strategy"] }) {
       score={s.sales_angle.score}
       preview={
         s.sales_angle.maslow ? (
-          <Tag_ color="#F97316">{s.sales_angle.maslow}</Tag_>
+          <Tag_ color="#7c3aed">{s.sales_angle.maslow}</Tag_>
         ) : null
       }
       detail={
@@ -722,7 +722,7 @@ function StrategyBlock({ s }: { s: StrategicAnalysis["strategy"] }) {
             {(
               [
                 { label: "Dolor", text: s.sales_angle.pain, color: "#EF4444" },
-                { label: "Deseo", text: s.sales_angle.desire, color: "#F97316" },
+                { label: "Deseo", text: s.sales_angle.desire, color: "#7c3aed" },
                 { label: "Transformación", text: s.sales_angle.transformation, color: "#22C55E" },
               ] as const
             ).map(({ label, text, color }) => (
@@ -741,7 +741,7 @@ function StrategyBlock({ s }: { s: StrategicAnalysis["strategy"] }) {
           {s.sales_angle.maslow && (
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-500">Maslow:</span>
-              <Tag_ color="#F97316">{s.sales_angle.maslow}</Tag_>
+              <Tag_ color="#7c3aed">{s.sales_angle.maslow}</Tag_>
             </div>
           )}
           <p className="text-xs text-gray-400 leading-relaxed">{s.sales_angle.description}</p>
@@ -824,6 +824,211 @@ function StrategyBlock({ s }: { s: StrategicAnalysis["strategy"] }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// RAW TEXT PARSING & RENDERING (fallback when all scores are 0)
+// ═══════════════════════════════════════════════════════════════════════════
+
+interface ParsedSection {
+  id: string;
+  label: string;
+  lines: string[];
+}
+
+function parseRawAnalysis(rawText: string): ParsedSection[] {
+  // Split by ━━━ SECTION_NAME ━━━ dividers
+  const sectionRegex = /━+\s*([A-ZÁÉÍÓÚÑÜ]+(?:\s+[A-ZÁÉÍÓÚÑÜ]+)*)\s*━+/g;
+  const parts: { name: string; startIndex: number }[] = [];
+  let match: RegExpExecArray | null;
+
+  while ((match = sectionRegex.exec(rawText)) !== null) {
+    parts.push({ name: match[1].trim(), startIndex: match.index + match[0].length });
+  }
+
+  if (parts.length === 0) {
+    // No sections found, return single section with all text
+    return [{ id: "analisis", label: "ANÁLISIS", lines: rawText.split("\n").filter((l) => l.trim()) }];
+  }
+
+  const sections: ParsedSection[] = [];
+  const knownSections: Record<string, string> = {
+    ESTRUCTURA: "estructura_raw",
+    COPY: "copy_raw",
+    ESTRATEGIA: "estrategia_raw",
+    "PRODUCCIÓN": "produccion_raw",
+    PRODUCCION: "produccion_raw",
+    VEREDICTO: "veredicto_raw",
+    "VEREDICTO FINAL": "veredicto_raw",
+  };
+
+  for (let i = 0; i < parts.length; i++) {
+    const start = parts[i].startIndex;
+    const end = i + 1 < parts.length ? rawText.lastIndexOf("━", parts[i + 1].startIndex - 1) : rawText.length;
+    const sectionText = rawText.slice(start, end).trim();
+    const lines = sectionText.split("\n").filter((l) => l.trim());
+    const name = parts[i].name;
+    const id = knownSections[name] || name.toLowerCase().replace(/\s+/g, "_") + "_raw";
+
+    sections.push({ id, label: name, lines });
+  }
+
+  return sections;
+}
+
+/** Render a single line with formatting */
+function FormattedLine({ text }: { text: string }) {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+
+  // Score pattern: "Score: X/10" or similar
+  const scoreMatch = trimmed.match(/Score:\s*(\d+)\/10/i);
+  if (scoreMatch) {
+    const score = parseInt(scoreMatch[1], 10);
+    const color = scoreColor(score);
+    return (
+      <div className="flex items-center gap-2 py-1">
+        <span className="text-xs text-gray-400">{trimmed.replace(scoreMatch[0], "").trim()}</span>
+        <span
+          className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-extrabold tabular-nums"
+          style={{ color, backgroundColor: `${color}18`, border: `1px solid ${color}40` }}
+        >
+          {scoreMatch[0]}
+        </span>
+      </div>
+    );
+  }
+
+  // Emoji header lines (🎣 Hook, 📖 Desarrollo, etc.)
+  const emojiHeaderMatch = trimmed.match(/^([\u{1F000}-\u{1FFFF}]|[\u{2600}-\u{27BF}]|[\u{FE00}-\u{FEFF}]|[\u{1F900}-\u{1F9FF}])\s+(.+)/u);
+  if (emojiHeaderMatch) {
+    return (
+      <p className="text-sm font-bold text-purple-400 mt-3 mb-1">
+        {emojiHeaderMatch[1]} {renderBoldText(emojiHeaderMatch[2])}
+      </p>
+    );
+  }
+
+  // ✅ lines
+  if (trimmed.startsWith("✅")) {
+    return (
+      <div className="flex items-start gap-2 py-0.5">
+        <CheckCircle2 size={13} className="text-green-400 mt-0.5 shrink-0" />
+        <span className="text-xs text-green-300 leading-relaxed">{renderBoldText(trimmed.slice(1).trim())}</span>
+      </div>
+    );
+  }
+
+  // ❌ lines
+  if (trimmed.startsWith("❌")) {
+    return (
+      <div className="flex items-start gap-2 py-0.5">
+        <XCircle size={13} className="text-red-400 mt-0.5 shrink-0" />
+        <span className="text-xs text-red-300 leading-relaxed">{renderBoldText(trimmed.slice(1).trim())}</span>
+      </div>
+    );
+  }
+
+  // Lines starting with bullet points or dashes
+  if (trimmed.startsWith("•") || trimmed.startsWith("-") || trimmed.startsWith("→")) {
+    return (
+      <p className="text-xs text-gray-400 leading-relaxed pl-3 py-0.5">
+        {trimmed.charAt(0)} {renderBoldText(trimmed.slice(1).trim())}
+      </p>
+    );
+  }
+
+  // Regular text
+  return (
+    <p className="text-xs text-gray-400 leading-relaxed py-0.5">
+      {renderBoldText(trimmed)}
+    </p>
+  );
+}
+
+/** Render **bold** markdown within text */
+function renderBoldText(text: string): React.ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  if (parts.length === 1) return text;
+
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (part.startsWith("**") && part.endsWith("**")) {
+          return (
+            <span key={i} className="font-bold text-white">
+              {part.slice(2, -2)}
+            </span>
+          );
+        }
+        return <span key={i}>{part}</span>;
+      })}
+    </>
+  );
+}
+
+/** Tab colors for raw sections */
+const RAW_TAB_COLORS: Record<string, string> = {
+  estructura_raw: "#3B82F6",
+  copy_raw: "#7c3aed",
+  estrategia_raw: "#22C55E",
+  produccion_raw: "#A855F7",
+  veredicto_raw: "#FFB800",
+};
+
+function RawAnalysisSection({ rawText }: { rawText: string }) {
+  const sections = parseRawAnalysis(rawText);
+  const [activeTab, setActiveTab] = useState(sections[0]?.id || "");
+
+  const activeSection = sections.find((s) => s.id === activeTab);
+
+  return (
+    <>
+      {/* Tab bar */}
+      <div className="flex border-b border-white/10 mb-6 overflow-x-auto">
+        {sections.map((section) => {
+          const isActive = activeTab === section.id;
+          const color = RAW_TAB_COLORS[section.id] || "#6B7280";
+          return (
+            <button
+              key={section.id}
+              onClick={() => setActiveTab(section.id)}
+              className="relative px-4 py-3 text-xs font-bold tracking-widest transition-colors whitespace-nowrap"
+              style={{ color: isActive ? color : "#6B7280" }}
+            >
+              {section.label}
+              {isActive && (
+                <motion.div
+                  layoutId="raw-tab-underline"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full"
+                  style={{ backgroundColor: color }}
+                  transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Tab content */}
+      <AnimatePresence mode="wait">
+        {activeSection && (
+          <motion.div
+            key={activeSection.id}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.22, ease: "easeInOut" }}
+            className="rounded-xl border border-white/[0.08] bg-[#1a1a1a] p-5 space-y-1"
+          >
+            {activeSection.lines.map((line, i) => (
+              <FormattedLine key={i} text={line} />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 interface StrategicAnalysisSectionProps {
@@ -837,6 +1042,23 @@ export default function StrategicAnalysisSection({
 }: StrategicAnalysisSectionProps) {
   const [activeTab, setActiveTab] = useState<TabId>("estructura");
 
+  // Detect if all structured dimension scores are 0 (no parsed data from Jarvis)
+  const allScoresZero =
+    analysis.structure.hook.score === 0 &&
+    analysis.structure.development.score === 0 &&
+    analysis.structure.cta.score === 0 &&
+    analysis.structure.format.score === 0 &&
+    analysis.copy.formula.score === 0 &&
+    analysis.copy.power_words.score === 0 &&
+    analysis.copy.mental_triggers.score === 0 &&
+    analysis.copy.tone.score === 0 &&
+    analysis.strategy.funnel.score === 0 &&
+    analysis.strategy.pillar.score === 0 &&
+    analysis.strategy.sales_angle.score === 0 &&
+    analysis.strategy.virality.score === 0;
+
+  const hasRawText = !!analysis.raw_text && analysis.raw_text.trim().length > 0;
+
   const TAB_CONTENT: Record<TabId, React.ReactNode> = {
     estructura: <StructureBlock s={analysis.structure} />,
     copy: <CopyBlock c={analysis.copy} />,
@@ -844,7 +1066,7 @@ export default function StrategicAnalysisSection({
   };
 
   return (
-    <section id="strategic" className="w-full max-w-3xl mx-auto px-4 py-10 sm:py-14">
+    <section id="strategic" className="w-full max-w-4xl mx-auto px-4 py-10 sm:py-14">
       <SectionHeader
         title="Análisis Estratégico"
         subtitle="12 dimensiones del contenido desglosadas"
@@ -852,43 +1074,50 @@ export default function StrategicAnalysisSection({
         icon={<BarChart2 size={18} />}
       />
 
-      {/* ── Tab bar ── */}
-      <div className="flex border-b border-white/10 mb-6">
-        {TABS.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className="relative px-4 py-3 text-xs font-bold tracking-widest transition-colors"
-              style={{ color: isActive ? tab.color : "#6B7280" }}
-            >
-              {tab.label}
-              {isActive && (
-                <motion.div
-                  layoutId="tab-underline"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full"
-                  style={{ backgroundColor: tab.color }}
-                  transition={{ type: "spring", stiffness: 380, damping: 32 }}
-                />
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {allScoresZero && hasRawText ? (
+        /* ── Fallback: show parsed raw_text with tabs when no structured data ── */
+        <RawAnalysisSection rawText={analysis.raw_text!} />
+      ) : (
+        <>
+          {/* ── Tab bar ── */}
+          <div className="flex border-b border-white/10 mb-6">
+            {TABS.map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className="relative px-4 py-3 text-xs font-bold tracking-widest transition-colors"
+                  style={{ color: isActive ? tab.color : "#6B7280" }}
+                >
+                  {tab.label}
+                  {isActive && (
+                    <motion.div
+                      layoutId="tab-underline"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full"
+                      style={{ backgroundColor: tab.color }}
+                      transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
 
-      {/* ── Tab content with slide transition ── */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.22, ease: "easeInOut" }}
-        >
-          {TAB_CONTENT[activeTab]}
-        </motion.div>
-      </AnimatePresence>
+          {/* ── Tab content with slide transition ── */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.22, ease: "easeInOut" }}
+            >
+              {TAB_CONTENT[activeTab]}
+            </motion.div>
+          </AnimatePresence>
+        </>
+      )}
     </section>
   );
 }

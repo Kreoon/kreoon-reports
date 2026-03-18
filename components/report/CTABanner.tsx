@@ -1,14 +1,14 @@
 export default function CTABanner() {
   return (
-    <section className="w-full bg-[#FFF8F0] border-t border-orange-100 py-14 px-6">
+    <section className="w-full bg-[#0a0a0f] border-t border-purple-500/20 py-14 px-6">
       <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
         {/* Headline */}
         <div className="flex-1 text-center md:text-left">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 leading-snug">
+          <h2 className="text-2xl md:text-3xl font-bold text-white leading-snug">
             ¿Quieres análisis como este{" "}
-            <span className="text-[#FF6B00]">para tu marca?</span>
+            <span className="text-[#a855f7]">para tu marca?</span>
           </h2>
-          <p className="mt-2 text-gray-500 text-base">
+          <p className="mt-2 text-gray-400 text-base">
             Agenda una sesión gratuita y te ayudamos a identificar oportunidades reales de crecimiento.
           </p>
         </div>
@@ -20,7 +20,7 @@ export default function CTABanner() {
             href="https://wa.me/573132947776"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-[#FF6B00] text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-[0_0_18px_rgba(255,107,0,0.45)] hover:bg-[#e05e00] transition-all duration-200"
+            className="inline-flex items-center gap-2 bg-[#7c3aed] text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-[0_0_18px_rgba(124,58,237,0.45)] hover:bg-[#6d28d9] transition-all duration-200"
           >
             Agenda una consulta gratis
           </a>
@@ -32,7 +32,7 @@ export default function CTABanner() {
               href="https://wa.me/573132947776"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-[#FF6B00] transition-colors"
+              className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#a855f7] transition-colors"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -50,7 +50,7 @@ export default function CTABanner() {
               href="https://instagram.com/alexandercast"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-[#FF6B00] transition-colors"
+              className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#a855f7] transition-colors"
             >
               <svg
                 viewBox="0 0 24 24"

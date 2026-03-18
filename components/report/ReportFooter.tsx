@@ -33,7 +33,7 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 
 export default function ReportFooter({ reportId, generatedDate }: ReportFooterProps) {
   return (
-    <footer className="w-full bg-[#1a1a1a] border-t-2 border-[#FF6B00]">
+    <footer className="w-full bg-[#1a1a24] border-t-2 border-[#7c3aed]">
       {/* ── Main grid ── */}
       <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
 
@@ -41,12 +41,12 @@ export default function ReportFooter({ reportId, generatedDate }: ReportFooterPr
         <div className="flex flex-col gap-4">
           {/* Avatar */}
           <div className="flex items-center gap-3">
-            <div className="w-16 h-16 rounded-full bg-[#FF6B00] flex items-center justify-center shrink-0">
+            <div className="w-16 h-16 rounded-full bg-[#7c3aed] flex items-center justify-center shrink-0">
               <span className="text-white font-bold text-xl tracking-wide">AC</span>
             </div>
             <div>
               <p className="text-white font-bold text-lg leading-tight">Alexander Cast</p>
-              <p className="text-[#FF6B00] text-sm">Estratega Digital y de Contenido</p>
+              <p className="text-[#7c3aed] text-sm">Estratega Digital y de Contenido</p>
             </div>
           </div>
 
@@ -57,7 +57,7 @@ export default function ReportFooter({ reportId, generatedDate }: ReportFooterPr
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram Alexander Cast"
-              className="text-white/60 hover:text-[#FF6B00] transition-colors"
+              className="text-white/60 hover:text-[#7c3aed] transition-colors"
             >
               <InstagramIcon className="w-5 h-5" />
             </a>
@@ -66,7 +66,7 @@ export default function ReportFooter({ reportId, generatedDate }: ReportFooterPr
               target="_blank"
               rel="noopener noreferrer"
               aria-label="LinkedIn Alexander Cast"
-              className="text-white/60 hover:text-[#FF6B00] transition-colors"
+              className="text-white/60 hover:text-[#7c3aed] transition-colors"
             >
               <LinkedInIcon className="w-5 h-5" />
             </a>
@@ -75,7 +75,7 @@ export default function ReportFooter({ reportId, generatedDate }: ReportFooterPr
               target="_blank"
               rel="noopener noreferrer"
               aria-label="TikTok Alexander Cast"
-              className="text-white/60 hover:text-[#FF6B00] transition-colors"
+              className="text-white/60 hover:text-[#7c3aed] transition-colors"
             >
               <TikTokIcon className="w-5 h-5" />
             </a>
@@ -86,7 +86,7 @@ export default function ReportFooter({ reportId, generatedDate }: ReportFooterPr
             href="https://wa.me/573132947776"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#FF6B00] text-sm font-medium hover:underline inline-flex items-center gap-1"
+            className="text-[#7c3aed] text-sm font-medium hover:underline inline-flex items-center gap-1"
           >
             → Consultoría 1:1
           </a>
@@ -96,7 +96,7 @@ export default function ReportFooter({ reportId, generatedDate }: ReportFooterPr
         <div className="flex flex-col gap-3 md:border-x md:border-[#2e2e2e] md:px-8">
           <div>
             <p className="text-white font-bold text-xl">UGC Colombia</p>
-            <p className="text-[#FF6B00] text-sm">Agencia de Creadores</p>
+            <p className="text-[#7c3aed] text-sm">Agencia de Creadores</p>
           </div>
           <p className="text-white/50 text-sm leading-relaxed">
             Conectamos marcas con creators auténticos para generar contenido que convierte.
@@ -106,7 +106,7 @@ export default function ReportFooter({ reportId, generatedDate }: ReportFooterPr
               href="https://instagram.com/agenciaugccolombia"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-white/60 hover:text-[#FF6B00] text-sm transition-colors"
+              className="flex items-center gap-2 text-white/60 hover:text-[#7c3aed] text-sm transition-colors"
             >
               <InstagramIcon className="w-4 h-4 shrink-0" />
               @agenciaugccolombia
@@ -115,7 +115,7 @@ export default function ReportFooter({ reportId, generatedDate }: ReportFooterPr
               href="https://wa.me/573132947776"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-white/60 hover:text-[#FF6B00] text-sm transition-colors"
+              className="flex items-center gap-2 text-white/60 hover:text-[#7c3aed] text-sm transition-colors"
             >
               <WhatsAppIcon className="w-4 h-4 shrink-0" />
               WhatsApp
@@ -129,10 +129,10 @@ export default function ReportFooter({ reportId, generatedDate }: ReportFooterPr
           <div>
             <p className="text-2xl font-bold tracking-tight">
               <span className="text-white">Kre</span>
-              <span className="text-[#FF6B00]">oo</span>
+              <span className="text-[#7c3aed]">oo</span>
               <span className="text-white">n</span>
             </p>
-            <p className="text-[#FF6B00] text-sm">Plataforma de Contenido</p>
+            <p className="text-[#7c3aed] text-sm">Plataforma de Contenido</p>
           </div>
 
           {/* Feature pills */}
@@ -140,7 +140,7 @@ export default function ReportFooter({ reportId, generatedDate }: ReportFooterPr
             {["Análisis", "Estrategia", "Producción"].map((pill) => (
               <span
                 key={pill}
-                className="text-xs text-[#FF6B00] bg-[#FF6B00]/10 px-3 py-1 rounded-full font-medium"
+                className="text-xs text-[#7c3aed] bg-[#7c3aed]/10 px-3 py-1 rounded-full font-medium"
               >
                 {pill}
               </span>
@@ -152,7 +152,7 @@ export default function ReportFooter({ reportId, generatedDate }: ReportFooterPr
             href="https://kreoon.app"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#FF6B00] text-sm font-medium hover:underline inline-flex items-center gap-1 mt-1"
+            className="text-[#7c3aed] text-sm font-medium hover:underline inline-flex items-center gap-1 mt-1"
           >
             → kreoon.app
           </a>
@@ -175,7 +175,7 @@ export default function ReportFooter({ reportId, generatedDate }: ReportFooterPr
           {/* Right */}
           <div className="flex flex-col items-center sm:items-end gap-0.5">
             <p className="font-mono text-xs text-gray-500">ID: {reportId}</p>
-            <p className="text-[10px] text-gray-600 italic">
+            <p className="text-[10px] text-gray-500 italic">
               Este análisis fue creado con IA
             </p>
           </div>

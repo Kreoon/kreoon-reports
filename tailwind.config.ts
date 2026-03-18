@@ -6,8 +6,8 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        kreoon: { DEFAULT: '#FF6B00', dark: '#CC5500', light: '#FFF8F0' },
-        surface: { DEFAULT: '#F5F5F5', dark: '#1a1a1a', darker: '#0A0A0A' },
+        kreoon: { DEFAULT: '#7c3aed', dark: '#6d28d9', light: '#a855f7' },
+        surface: { DEFAULT: '#F5F5F5', dark: '#1a1a24', darker: '#0a0a0f' },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

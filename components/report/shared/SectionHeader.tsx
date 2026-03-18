@@ -27,7 +27,7 @@ export default function SectionHeader({ id, icon, title, subtitle, badge }: Sect
       )}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h2>
+          <h2 className="text-xl font-bold text-white">{title}</h2>
           {badge && (
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-kreoon/10 text-kreoon">
               {badge}
@@ -35,7 +35,7 @@ export default function SectionHeader({ id, icon, title, subtitle, badge }: Sect
           )}
         </div>
         {subtitle && (
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{subtitle}</p>
+          <p className="text-sm text-gray-400 mt-0.5">{subtitle}</p>
         )}
       </div>
     </motion.div>

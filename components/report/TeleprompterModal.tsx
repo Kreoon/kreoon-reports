@@ -25,7 +25,7 @@ function speedToPxPerFrame(speed: number): number {
 // ─── Section label colours ──────────────────────────────────────────────────────
 
 const SECTION_COLOR: Record<ScriptLine["section"], string> = {
-  hook: "#f97316",
+  hook: "#7c3aed",
   development: "#60a5fa",
   cta: "#4ade80",
   transition: "#a78bfa",
@@ -44,7 +44,7 @@ const COUNTDOWN_STEPS: Array<{ label: string; color: string }> = [
   { label: "3", color: "#ffffff" },
   { label: "2", color: "#ffffff" },
   { label: "1", color: "#ffffff" },
-  { label: "GO!", color: "#f97316" },
+  { label: "GO!", color: "#7c3aed" },
 ];
 
 // ─── Component ─────────────────────────────────────────────────────────────────
@@ -59,9 +59,14 @@ interface TeleprompterModalProps {
 export default function TeleprompterModal({
   isOpen,
   onClose,
-  script,
+  script: rawScript,
   versionLabel,
 }: TeleprompterModalProps) {
+  // Fallback: if script is empty, show a single placeholder line
+  const script: ScriptLine[] =
+    rawScript.length > 0
+      ? rawScript
+      : [{ time: "", text: "No hay script disponible.", direction: "", section: "development" as const }];
   // ── Phase & scroll state
   const [phase, setPhase] = useState<Phase>("idle");
   const [countdownStep, setCountdownStep] = useState(0); // 0=3, 1=2, 2=1, 3=GO!
@@ -325,7 +330,7 @@ export default function TeleprompterModal({
           className="h-full transition-none"
           style={{
             width: `${scrollPct}%`,
-            background: "linear-gradient(90deg, #f97316, #fb923c)",
+            background: "linear-gradient(90deg, #7c3aed, #a855f7)",
           }}
         />
       </div>
@@ -337,7 +342,7 @@ export default function TeleprompterModal({
           top: "33%",
           height: "72px",
           background:
-            "linear-gradient(180deg, transparent 0%, rgba(249,115,22,0.08) 40%, rgba(249,115,22,0.12) 50%, rgba(249,115,22,0.08) 60%, transparent 100%)",
+            "linear-gradient(180deg, transparent 0%, rgba(124,58,237,0.08) 40%, rgba(124,58,237,0.12) 50%, rgba(124,58,237,0.08) 60%, transparent 100%)",
         }}
       >
         <div
@@ -346,7 +351,7 @@ export default function TeleprompterModal({
             top: "50%",
             height: "1px",
             background:
-              "linear-gradient(90deg, transparent 0%, rgba(249,115,22,0.4) 10%, rgba(249,115,22,0.6) 50%, rgba(249,115,22,0.4) 90%, transparent 100%)",
+              "linear-gradient(90deg, transparent 0%, rgba(124,58,237,0.4) 10%, rgba(124,58,237,0.6) 50%, rgba(124,58,237,0.4) 90%, transparent 100%)",
           }}
         />
       </div>
@@ -514,8 +519,8 @@ export default function TeleprompterModal({
               className="px-8 py-4 rounded-2xl text-2xl font-bold tracking-widest"
               style={{
                 background: "rgba(0,0,0,0.75)",
-                border: "1px solid rgba(249,115,22,0.4)",
-                color: "#f97316",
+                border: "1px solid rgba(124,58,237,0.4)",
+                color: "#7c3aed",
                 backdropFilter: "blur(8px)",
               }}
             >
@@ -554,7 +559,7 @@ export default function TeleprompterModal({
             {/* Version label */}
             <span
               className="text-xs font-mono truncate max-w-[80px] md:max-w-[140px] shrink-0"
-              style={{ color: "#f97316" }}
+              style={{ color: "#7c3aed" }}
             >
               {versionLabel}
             </span>
@@ -593,9 +598,9 @@ export default function TeleprompterModal({
                   key={sz}
                   className="w-7 h-7 rounded flex items-center justify-center text-xs font-bold transition-colors"
                   style={{
-                    background: fontSize === sz ? "rgba(249,115,22,0.25)" : "transparent",
-                    color: fontSize === sz ? "#f97316" : "rgba(255,255,255,0.4)",
-                    border: fontSize === sz ? "1px solid rgba(249,115,22,0.5)" : "1px solid transparent",
+                    background: fontSize === sz ? "rgba(124,58,237,0.25)" : "transparent",
+                    color: fontSize === sz ? "#7c3aed" : "rgba(255,255,255,0.4)",
+                    border: fontSize === sz ? "1px solid rgba(124,58,237,0.5)" : "1px solid transparent",
                   }}
                   onClick={() => setFontSize(sz)}
                   aria-label={`Tamaño de fuente ${sz}`}
@@ -613,9 +618,9 @@ export default function TeleprompterModal({
               <button
                 className="w-10 h-10 rounded-full flex items-center justify-center transition-colors shrink-0"
                 style={{
-                  background: "rgba(249,115,22,0.2)",
-                  border: "1px solid rgba(249,115,22,0.5)",
-                  color: "#f97316",
+                  background: "rgba(124,58,237,0.2)",
+                  border: "1px solid rgba(124,58,237,0.5)",
+                  color: "#7c3aed",
                 }}
                 onClick={handlePlayPause}
                 aria-label={isPlayPhase ? "Pausar" : "Reproducir"}

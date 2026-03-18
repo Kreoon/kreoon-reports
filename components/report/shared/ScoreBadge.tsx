@@ -1,6 +1,6 @@
 // ── ScoreBadge ────────────────────────────────────────
 // Color-coded score display.
-// 9-10 → gold  | 7-8 → green | 4-6 → orange | 0-3 → red
+// 9-10 → gold  | 7-8 → green | 4-6 → purple (kreoon) | 0-3 → red
 // No "use client" needed — purely presentational.
 
 interface ScoreBadgeProps {
@@ -36,7 +36,7 @@ function getRingColor(score: number, max: number): string {
   const normalized = (score / max) * 10;
   if (normalized >= 9) return '#facc15'; // yellow-400
   if (normalized >= 7) return '#4ade80'; // green-400
-  if (normalized >= 4) return '#FF6B00'; // kreoon
+  if (normalized >= 4) return '#7c3aed'; // kreoon
   return '#f87171'; // red-400
 }
 

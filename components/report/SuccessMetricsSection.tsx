@@ -26,7 +26,7 @@ const stagger = {
 
 function SubHeading({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-xs uppercase tracking-widest text-orange-500 font-semibold mb-3">
+    <p className="text-xs uppercase tracking-widest text-purple-500 font-semibold mb-3">
       {children}
     </p>
   );
@@ -222,7 +222,7 @@ function EvaluationTimeline({ timeline }: { timeline: SuccessMetrics["evaluation
         {timeline.map((milestone, i) => (
           <motion.div key={i} variants={fadeUp} className="flex flex-col items-center text-center gap-2">
             {/* Node circle */}
-            <div className="relative z-10 w-10 h-10 rounded-full bg-[#1a1a1a] border-2 border-orange-500/60 flex items-center justify-center text-orange-400 shrink-0">
+            <div className="relative z-10 w-10 h-10 rounded-full bg-[#1a1a1a] border-2 border-purple-500/60 flex items-center justify-center text-purple-400 shrink-0">
               <Clock size={15} />
             </div>
 
@@ -236,7 +236,7 @@ function EvaluationTimeline({ timeline }: { timeline: SuccessMetrics["evaluation
                   key={ci}
                   className="flex items-start gap-1.5 text-xs text-gray-400 leading-snug"
                 >
-                  <span className="mt-0.5 shrink-0 text-orange-500">›</span>
+                  <span className="mt-0.5 shrink-0 text-purple-500">›</span>
                   {check}
                 </li>
               ))}
@@ -318,7 +318,7 @@ function PlanBCard({ steps }: { steps: string[] }) {
 
 export default function SuccessMetricsSection({ metrics }: SuccessMetricsSectionProps) {
   return (
-    <section id="metrics" className="w-full max-w-3xl mx-auto px-4 py-10 sm:py-14">
+    <section id="metrics" className="w-full max-w-4xl mx-auto px-4 py-10 sm:py-14">
       <div className="bg-[#1a1a1a] rounded-2xl p-6 sm:p-8 space-y-10">
 
         {/* Section header */}
@@ -340,7 +340,7 @@ export default function SuccessMetricsSection({ metrics }: SuccessMetricsSection
         {/* ── B) Benchmark Bars ── */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <TrendingUp size={13} className="text-orange-500" />
+            <TrendingUp size={13} className="text-purple-500" />
             <SubHeading>Benchmarks de Engagement</SubHeading>
           </div>
           <BenchmarkBars benchmarks={metrics.benchmarks} />

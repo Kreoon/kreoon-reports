@@ -56,13 +56,13 @@ export default function ScrollNavbar({ activeSection }: ScrollNavbarProps) {
       ].join(" ")}
     >
       <div
-        className="backdrop-blur-md border-b border-orange-500/30"
+        className="backdrop-blur-md border-b border-purple-500/30"
         style={{ backgroundColor: "rgba(12, 12, 12, 0.92)" }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-between gap-4">
 
           {/* Left: brand */}
-          <span className="text-orange-500 font-extrabold tracking-[0.2em] text-sm shrink-0 select-none">
+          <span className="text-purple-500 font-extrabold tracking-[0.2em] text-sm shrink-0 select-none">
             KREOON
           </span>
 
@@ -78,9 +78,9 @@ export default function ScrollNavbar({ activeSection }: ScrollNavbarProps) {
                       className={[
                         "relative px-3 py-1 text-xs sm:text-sm font-medium whitespace-nowrap",
                         "transition-colors duration-150 rounded",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500",
                         isActive
-                          ? "text-orange-500"
+                          ? "text-purple-500"
                           : "text-gray-400 hover:text-white",
                       ].join(" ")}
                     >
@@ -88,7 +88,7 @@ export default function ScrollNavbar({ activeSection }: ScrollNavbarProps) {
                       {/* Active underline */}
                       {isActive && (
                         <span
-                          className="absolute bottom-0 left-3 right-3 h-px bg-orange-500 rounded-full"
+                          className="absolute bottom-0 left-3 right-3 h-px bg-purple-500 rounded-full"
                           aria-hidden="true"
                         />
                       )}

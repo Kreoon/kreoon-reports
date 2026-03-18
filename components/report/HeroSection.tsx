@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
+import { ExternalLink } from "lucide-react";
 import { ReportData } from "@/types/report";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -49,18 +50,19 @@ function contentTypeLabel(ct: ReportData["content_type"]): string {
 function erColor(er: number | undefined): string {
   if (er == null) return "text-gray-400";
   if (er >= 5) return "text-emerald-400";
-  if (er >= 3) return "text-orange-400";
+  if (er >= 3) return "text-purple-400";
   return "text-red-400";
 }
 
 function erBg(er: number | undefined): string {
   if (er == null) return "bg-gray-400/10 border-gray-400/30";
   if (er >= 5) return "bg-emerald-400/10 border-emerald-400/30";
-  if (er >= 3) return "bg-orange-400/10 border-orange-400/30";
+  if (er >= 3) return "bg-purple-400/10 border-purple-400/30";
   return "bg-red-400/10 border-red-400/30";
 }
 
 function scoreLabel(score: number): string {
+  if (score === 0) return "PENDIENTE";
   if (score >= 80) return "EXCELENTE";
   if (score >= 60) return "BUENO";
   return "MEJORABLE";
@@ -68,7 +70,7 @@ function scoreLabel(score: number): string {
 
 function scoreGradient(score: number): { stroke: string; label: string } {
   if (score >= 80) return { stroke: "#22c55e", label: "text-emerald-400" };
-  if (score >= 60) return { stroke: "#f97316", label: "text-orange-400" };
+  if (score >= 60) return { stroke: "#7c3aed", label: "text-purple-400" };
   return { stroke: "#ef4444", label: "text-red-400" };
 }
 
@@ -85,11 +87,85 @@ function PlatformIcon({ platform }: { platform: ReportData["platform"] }) {
   };
   return (
     <div className="w-full h-full flex flex-col items-center justify-center gap-3 bg-neutral-900">
-      <div className="w-20 h-20 rounded-2xl bg-orange-500/20 border border-orange-500/40 flex items-center justify-center">
-        <span className="text-2xl font-black text-orange-400">{icons[platform]}</span>
+      <div className="w-20 h-20 rounded-2xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center">
+        <span className="text-2xl font-black text-purple-400">{icons[platform]}</span>
       </div>
       <span className="text-sm text-neutral-500 font-medium">Sin vista previa</span>
     </div>
+  );
+}
+
+// ─── Social Media Embed URL ───────────────────────────────────────────────
+
+function getSocialEmbedUrl(originalUrl: string, platform: ReportData["platform"]): string | null {
+  if (platform === "instagram") {
+    const match = originalUrl.match(/\/p\/([A-Za-z0-9_-]+)/);
+    if (match) return `https://www.instagram.com/p/${match[1]}/embed/`;
+    // Also handle /reel/ URLs
+    const reelMatch = originalUrl.match(/\/reel\/([A-Za-z0-9_-]+)/);
+    if (reelMatch) return `https://www.instagram.com/p/${reelMatch[1]}/embed/`;
+  }
+  if (platform === "tiktok") {
+    const match = originalUrl.match(/\/video\/(\d+)/);
+    if (match) return `https://www.tiktok.com/embed/v2/${match[1]}`;
+  }
+  if (platform === "youtube") {
+    // Handle youtu.be/ID, youtube.com/watch?v=ID, youtube.com/shorts/ID
+    let videoId: string | null = null;
+    const shortMatch = originalUrl.match(/youtu\.be\/([A-Za-z0-9_-]+)/);
+    const longMatch = originalUrl.match(/[?&]v=([A-Za-z0-9_-]+)/);
+    const shortsMatch = originalUrl.match(/\/shorts\/([A-Za-z0-9_-]+)/);
+    if (shortMatch) videoId = shortMatch[1];
+    else if (longMatch) videoId = longMatch[1];
+    else if (shortsMatch) videoId = shortsMatch[1];
+    if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+  }
+  return null;
+}
+
+// ─── Drive Embed with Fallback ────────────────────────────────────────────
+
+function DriveEmbed({ driveMediaId, platform }: { driveMediaId: string; platform: ReportData["platform"] }) {
+  const [failed, setFailed] = useState(false);
+  const driveUrl = `https://drive.google.com/file/d/${driveMediaId}/preview`;
+  const openUrl = `https://drive.google.com/file/d/${driveMediaId}/view`;
+
+  if (failed) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-neutral-900 px-6 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-400">
+            <polygon points="23 7 16 12 23 17 23 7" />
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+          </svg>
+        </div>
+        <p className="text-sm text-neutral-400">Vista previa no disponible</p>
+        <a
+          href={openUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-500/20 border border-purple-500/40 text-purple-400 text-sm font-semibold hover:bg-purple-500/30 transition-colors"
+        >
+          Abrir video
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <iframe
+      src={driveUrl}
+      className="w-full h-full border-0"
+      allow="autoplay"
+      title="Video de contenido analizado"
+      allowFullScreen
+      onError={() => setFailed(true)}
+    />
   );
 }
 
@@ -146,8 +222,8 @@ function ScoreCircle({ score }: { score: number }) {
         </svg>
         {/* Center */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-black text-white leading-none">{animated}</span>
-          <span className="text-xs text-neutral-400 font-medium">/100</span>
+          <span className="text-3xl font-black text-white leading-none">{score === 0 ? "—" : animated}</span>
+          <span className="text-xs text-neutral-400 font-medium">{score === 0 ? "" : "/100"}</span>
         </div>
       </div>
       {/* Badge */}
@@ -156,7 +232,7 @@ function ScoreCircle({ score }: { score: number }) {
           score >= 80
             ? "bg-emerald-400/10 border-emerald-400/40 text-emerald-400"
             : score >= 60
-            ? "bg-orange-400/10 border-orange-400/40 text-orange-400"
+            ? "bg-purple-400/10 border-purple-400/40 text-purple-400"
             : "bg-red-400/10 border-red-400/40 text-red-400"
         }`}
       >
@@ -236,22 +312,28 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ data }: HeroSectionProps) {
-  const { platform, content_type, creator_username, creator_followers, duration_seconds, metrics, drive_media_id, scores } = data;
+  const { platform, content_type, creator_username, creator_followers, duration_seconds, metrics, drive_media_id, scores, original_url } = data;
   const er = metrics.engagement_rate;
   const totalScore = scores.total;
+  const socialEmbedUrl = original_url ? getSocialEmbedUrl(original_url, platform) : null;
+  const pLabel = platformLabel(platform);
 
   return (
     <section
-      className="relative min-h-screen w-full flex flex-col overflow-hidden"
-      style={{
-        background: "linear-gradient(135deg, #0A0A0A 0%, #0F0A06 60%, #140C05 100%)",
-      }}
+      className="noise-overlay bg-mesh-gradient relative min-h-screen w-full flex flex-col overflow-hidden"
     >
       {/* Subtle radial glow top-left */}
       <div
         className="pointer-events-none absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full opacity-20"
         style={{
-          background: "radial-gradient(circle, rgba(249,115,22,0.35) 0%, transparent 70%)",
+          background: "radial-gradient(circle, rgba(124,58,237,0.35) 0%, transparent 70%)",
+        }}
+      />
+      {/* Subtle radial glow right (blue-ish) */}
+      <div
+        className="pointer-events-none absolute top-1/3 -right-32 w-[500px] h-[500px] rounded-full opacity-10"
+        style={{
+          background: "radial-gradient(circle, rgba(59,130,246,0.3) 0%, transparent 70%)",
         }}
       />
 
@@ -268,26 +350,39 @@ export default function HeroSection({ data }: HeroSectionProps) {
           <div className="w-full max-w-[280px] md:max-w-none mx-auto">
             {/* Gradient border wrapper */}
             <div
-              className="rounded-2xl p-[2px] shadow-2xl"
+              className="card-premium rounded-2xl p-[2px] shadow-2xl animate-pulse-kreoon"
               style={{
-                background: "linear-gradient(135deg, rgba(249,115,22,0.7) 0%, rgba(249,115,22,0.15) 50%, rgba(249,115,22,0.5) 100%)",
-                boxShadow: "0 0 40px rgba(249,115,22,0.25), 0 25px 60px rgba(0,0,0,0.6)",
+                background: "linear-gradient(135deg, rgba(124,58,237,0.7) 0%, rgba(124,58,237,0.15) 50%, rgba(124,58,237,0.5) 100%)",
+                boxShadow: "0 0 60px rgba(124,58,237,0.3), 0 0 100px rgba(124,58,237,0.1), 0 25px 60px rgba(0,0,0,0.6)",
               }}
             >
               {/* 9:16 aspect ratio container */}
               <div className="rounded-[14px] overflow-hidden bg-black" style={{ aspectRatio: "9/16" }}>
-                {drive_media_id ? (
+                {socialEmbedUrl ? (
                   <iframe
-                    src={`https://drive.google.com/file/d/${drive_media_id}/preview`}
+                    src={socialEmbedUrl}
                     className="w-full h-full border-0"
-                    allow="autoplay"
+                    allow="autoplay; encrypted-media"
                     title="Video de contenido analizado"
                     allowFullScreen
                   />
+                ) : drive_media_id ? (
+                  <DriveEmbed driveMediaId={drive_media_id} platform={platform} />
                 ) : (
                   <PlatformIcon platform={platform} />
                 )}
               </div>
+              {original_url && (
+                <a
+                  href={original_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-1.5 mt-3 text-xs text-gray-400 hover:text-purple-400 transition-colors"
+                >
+                  <ExternalLink size={12} />
+                  Ver post original en {pLabel}
+                </a>
+              )}
             </div>
           </div>
         </motion.div>
@@ -302,30 +397,33 @@ export default function HeroSection({ data }: HeroSectionProps) {
           {/* Platform badge */}
           <motion.div variants={fadeUp}>
             <span
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase border"
+              className="badge-ai inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase border"
               style={{
-                backgroundColor: "rgba(249,115,22,0.1)",
-                borderColor: "rgba(249,115,22,0.4)",
-                color: "#f97316",
+                backgroundColor: "rgba(124,58,237,0.1)",
+                borderColor: "rgba(124,58,237,0.4)",
+                color: "#7c3aed",
               }}
             >
               <span
-                className="w-1.5 h-1.5 rounded-full bg-orange-500"
-                style={{ boxShadow: "0 0 6px rgba(249,115,22,0.8)" }}
+                className="w-1.5 h-1.5 rounded-full bg-purple-500"
+                style={{ boxShadow: "0 0 6px rgba(124,58,237,0.8)" }}
               />
-              {platformLabel(platform)} · {contentTypeLabel(content_type)}
+              AI REPORT · {platformLabel(platform)} · {contentTypeLabel(content_type)}
             </span>
           </motion.div>
 
           {/* Title */}
           <motion.div variants={fadeUp}>
-            <h1 className="text-5xl md:text-7xl font-black text-white leading-none tracking-tight">
-              ANÁLISIS
+            <h1
+              className="text-5xl md:text-7xl font-black leading-none tracking-tight"
+              style={{ textShadow: "0 0 40px rgba(124,58,237,0.15)" }}
+            >
+              <span className="text-white/80">ANÁLISIS</span>
               <br />
               <span
                 className="text-transparent bg-clip-text"
                 style={{
-                  backgroundImage: "linear-gradient(90deg, #f97316 0%, #fb923c 60%, #fdba74 100%)",
+                  backgroundImage: "linear-gradient(90deg, #7c3aed 0%, #a855f7 60%, #c084fc 100%)",
                 }}
               >
                 ESTRATÉGICO
@@ -335,8 +433,8 @@ export default function HeroSection({ data }: HeroSectionProps) {
 
           {/* Creator */}
           <motion.div variants={fadeUp} className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center justify-center">
-              <span className="text-orange-400 font-bold text-sm">@</span>
+            <div className="w-8 h-8 rounded-full bg-purple-500/20 border border-purple-500/40 flex items-center justify-center">
+              <span className="text-purple-400 font-bold text-sm">@</span>
             </div>
             <span className="text-lg font-semibold text-white">
               @{creator_username}
@@ -354,20 +452,20 @@ export default function HeroSection({ data }: HeroSectionProps) {
           {/* Stats pills */}
           <motion.div variants={fadeUp} className="flex flex-wrap gap-2">
             {/* Duration */}
-            <StatPill label="Duración" value={formatDuration(duration_seconds)} className="bg-white/5 border-white/10 text-white" />
+            <StatPill label="Duración" value={formatDuration(duration_seconds)} className="card-premium bg-white/[0.03] border-white/[0.08] backdrop-blur-sm text-white" />
 
             {/* Views */}
             <StatPill
               label="Vistas"
               value={formatNumber(metrics.views)}
-              className="bg-white/5 border-white/10 text-white"
+              className="card-premium bg-white/[0.03] border-white/[0.08] backdrop-blur-sm text-white"
             />
 
             {/* Likes */}
             <StatPill
               label="Likes"
               value={formatNumber(metrics.likes)}
-              className="bg-white/5 border-white/10 text-white"
+              className="card-premium bg-white/[0.03] border-white/[0.08] backdrop-blur-sm text-white"
             />
 
             {/* ER */}
@@ -390,27 +488,35 @@ export default function HeroSection({ data }: HeroSectionProps) {
 
           {/* CTA */}
           <motion.div variants={fadeUp}>
+            <div className="relative inline-flex">
+              {/* Animated glow ring */}
+              <div
+                className="absolute -inset-1 rounded-xl opacity-40 blur-md animate-pulse-kreoon"
+                style={{
+                  background: "linear-gradient(135deg, rgba(124,58,237,0.4), rgba(168,85,247,0.2))",
+                }}
+              />
             <button
               onClick={() => {
                 const next = document.getElementById("analysis-sections");
                 if (next) next.scrollIntoView({ behavior: "smooth" });
                 else window.scrollBy({ top: window.innerHeight * 0.9, behavior: "smooth" });
               }}
-              className="group inline-flex items-center gap-3 px-6 py-3 rounded-xl border font-semibold text-sm text-orange-400 transition-all duration-300"
+              className="relative group inline-flex items-center gap-3 px-6 py-3 rounded-xl border font-semibold text-sm text-purple-400 transition-all duration-300"
               style={{
-                borderColor: "rgba(249,115,22,0.5)",
-                backgroundColor: "rgba(249,115,22,0.06)",
+                borderColor: "rgba(124,58,237,0.5)",
+                backgroundColor: "rgba(124,58,237,0.06)",
               }}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.boxShadow =
-                  "0 0 24px rgba(249,115,22,0.35), 0 0 48px rgba(249,115,22,0.15)";
+                  "0 0 24px rgba(124,58,237,0.35), 0 0 48px rgba(124,58,237,0.15)";
                 (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                  "rgba(249,115,22,0.12)";
+                  "rgba(124,58,237,0.12)";
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
                 (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                  "rgba(249,115,22,0.06)";
+                  "rgba(124,58,237,0.06)";
               }}
             >
               Ver análisis completo
@@ -432,6 +538,7 @@ export default function HeroSection({ data }: HeroSectionProps) {
                 </svg>
               </motion.span>
             </button>
+            </div>
           </motion.div>
         </motion.div>
       </div>

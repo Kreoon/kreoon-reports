@@ -65,7 +65,7 @@ const stagger = {
 
 function SubHeading({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-xs uppercase tracking-widest text-orange-500 font-semibold mb-3">
+    <p className="text-xs uppercase tracking-widest text-purple-500 font-semibold mb-3">
       {children}
     </p>
   );
@@ -201,7 +201,7 @@ function ScriptTimeline({ lines }: { lines: ScriptLine[] }) {
                 {/* On-screen text */}
                 {line.on_screen_text && (
                   <div className="mt-1">
-                    <span className="inline-block font-mono text-[11px] px-2.5 py-1 rounded-md bg-white/10 text-orange-300 border border-orange-500/20 leading-normal">
+                    <span className="inline-block font-mono text-[11px] px-2.5 py-1 rounded-md bg-white/10 text-purple-300 border border-purple-500/20 leading-normal">
                       {line.on_screen_text}
                     </span>
                   </div>
@@ -232,7 +232,7 @@ function TechnicalSetupGrid({ setup }: { setup: ProductionGuide["setup"] }) {
           variants={fadeUp}
           className="bg-white/5 border border-white/8 rounded-xl p-4 space-y-2 hover:bg-white/8 hover:border-white/15 transition-colors"
         >
-          <div className="flex items-center gap-2 text-orange-400">
+          <div className="flex items-center gap-2 text-purple-400">
             {icon}
             <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">
               {label}
@@ -257,7 +257,7 @@ function MusicCard({ music }: { music: ProductionGuide["music"] }) {
       className="bg-white/5 border border-white/10 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center gap-4"
     >
       {/* Icon */}
-      <div className="shrink-0 w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-400">
+      <div className="shrink-0 w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
         <Music size={22} />
       </div>
 
@@ -266,7 +266,7 @@ function MusicCard({ music }: { music: ProductionGuide["music"] }) {
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-white font-semibold text-sm">{music.type}</p>
           {music.trending && music.name && (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-400 border border-orange-500/30 uppercase tracking-wide">
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/30 uppercase tracking-wide">
               🔥 Trending — {music.name}
             </span>
           )}
@@ -289,7 +289,7 @@ function MusicCard({ music }: { music: ProductionGuide["music"] }) {
 
 export default function ProductionGuideSection({ guide }: ProductionGuideSectionProps) {
   return (
-    <section id="production" className="w-full max-w-3xl mx-auto px-4 py-10 sm:py-14">
+    <section id="production" className="w-full max-w-4xl mx-auto px-4 py-10 sm:py-14">
       <div className="bg-[#1a1a1a] rounded-2xl p-6 sm:p-8 space-y-10">
 
         {/* Section header */}

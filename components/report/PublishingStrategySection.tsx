@@ -26,7 +26,7 @@ const stagger = {
 
 function SubHeading({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-xs uppercase tracking-widest text-orange-500 font-semibold mb-3">
+    <p className="text-xs uppercase tracking-widest text-purple-500 font-semibold mb-3">
       {children}
     </p>
   );
@@ -41,27 +41,27 @@ function BestTimeCard({ strategy }: { strategy: PublishStrategy }) {
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4 }}
-      className="relative overflow-hidden rounded-xl border border-orange-500/30 bg-gradient-to-br from-orange-500/10 to-orange-500/5 p-5"
+      className="relative overflow-hidden rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-purple-500/5 p-5"
     >
       {/* Glow accent */}
-      <div className="pointer-events-none absolute -top-10 -right-10 w-40 h-40 rounded-full bg-orange-500/10 blur-2xl" />
+      <div className="pointer-events-none absolute -top-10 -right-10 w-40 h-40 rounded-full bg-purple-500/10 blur-2xl" />
 
       <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
         {/* Icon */}
-        <div className="shrink-0 w-14 h-14 rounded-2xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400">
+        <div className="shrink-0 w-14 h-14 rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
           <Clock size={24} />
         </div>
 
         {/* Main info */}
         <div className="flex-1 space-y-1">
-          <p className="text-xs uppercase tracking-widest font-semibold text-orange-400">
+          <p className="text-xs uppercase tracking-widest font-semibold text-purple-400">
             Mejor momento para publicar
           </p>
           <div className="flex flex-wrap items-baseline gap-2">
             <span className="text-2xl font-black text-white">
               {strategy.best_day}
             </span>
-            <span className="text-lg font-bold text-orange-400">
+            <span className="text-lg font-bold text-purple-400">
               {strategy.best_time}
             </span>
             <span className="text-sm text-gray-400 font-medium">
@@ -107,11 +107,11 @@ function PostPublishTimeline({ actions }: { actions: PublishStrategy["post_actio
           >
             {/* Time stamp */}
             <div className="shrink-0 w-[52px] flex flex-col items-center gap-1.5 pt-1">
-              <span className="text-[10px] font-bold text-orange-400 tabular-nums text-center leading-tight">
+              <span className="text-[10px] font-bold text-purple-400 tabular-nums text-center leading-tight">
                 {getTimeLabel(action.minutes_after)}
               </span>
               {/* Node */}
-              <div className="w-2.5 h-2.5 rounded-full bg-orange-500 border-2 border-[#1a1a1a] ring-1 ring-orange-500/40" />
+              <div className="w-2.5 h-2.5 rounded-full bg-purple-500 border-2 border-[#1a1a24] ring-1 ring-purple-500/40" />
             </div>
 
             {/* Action card */}
@@ -203,11 +203,11 @@ function RepurposingTable({ items }: { items: PublishStrategy["repurposing"] }) 
       className="rounded-xl overflow-hidden border border-white/10"
     >
       {/* Orange header row */}
-      <div className="grid grid-cols-3 bg-orange-500/20 border-b border-orange-500/30">
+      <div className="grid grid-cols-3 bg-purple-500/20 border-b border-purple-500/30">
         {["Plataforma", "Formato", "Adaptación"].map((col) => (
           <div
             key={col}
-            className="px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-orange-300"
+            className="px-4 py-2.5 text-xs font-bold uppercase tracking-wide text-purple-300"
           >
             {col}
           </div>
@@ -260,7 +260,7 @@ function WeekPlanGrid({ days }: { days: PublishStrategy["week_plan"] }) {
                 variants={fadeUp}
                 className="bg-white/5 border border-white/8 rounded-xl p-3 space-y-1 hover:bg-white/8 hover:border-white/15 transition-colors"
               >
-                <p className="text-[10px] font-bold uppercase tracking-wide text-orange-400">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-purple-400">
                   {d.day}
                 </p>
                 <p className="text-xs text-gray-300 leading-snug">{d.content}</p>
@@ -277,7 +277,7 @@ function WeekPlanGrid({ days }: { days: PublishStrategy["week_plan"] }) {
 
 export default function PublishingStrategySection({ strategy }: PublishingStrategySectionProps) {
   return (
-    <section id="publishing" className="w-full max-w-3xl mx-auto px-4 py-10 sm:py-14">
+    <section id="publishing" className="w-full max-w-4xl mx-auto px-4 py-10 sm:py-14">
       <div className="bg-[#1a1a1a] rounded-2xl p-6 sm:p-8 space-y-10">
 
         {/* Section header */}
@@ -321,7 +321,7 @@ export default function PublishingStrategySection({ strategy }: PublishingStrate
         {/* ── E) Repurposing Table ── */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <RefreshCw size={13} className="text-orange-500" />
+            <RefreshCw size={13} className="text-purple-500" />
             <SubHeading>Repurposing</SubHeading>
           </div>
           <RepurposingTable items={strategy.repurposing} />
@@ -332,7 +332,7 @@ export default function PublishingStrategySection({ strategy }: PublishingStrate
         {/* ── F) Week Plan ── */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <LayoutGrid size={13} className="text-orange-500" />
+            <LayoutGrid size={13} className="text-purple-500" />
             <SubHeading>Plan de la Semana</SubHeading>
           </div>
           <WeekPlanGrid days={strategy.week_plan} />
