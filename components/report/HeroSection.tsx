@@ -309,13 +309,18 @@ const fadeIn = {
 
 interface HeroSectionProps {
   data: ReportData;
+  effectiveScores?: ReportData['scores'];
+  viewsEstimated?: boolean;
+  estimatedViews?: number | null;
+  effectiveER?: number;
 }
 
-export default function HeroSection({ data }: HeroSectionProps) {
+export default function HeroSection({ data, effectiveScores, viewsEstimated, estimatedViews, effectiveER }: HeroSectionProps) {
   const { platform, content_type, creator_username, creator_followers, duration_seconds, metrics, drive_media_id, scores, original_url, creator_verified, creator_bio, published_at, engagement_rate, niche, sound_used } = data;
-  const rawER = engagement_rate ?? metrics.engagement_rate;
+  const rawER = effectiveER ?? engagement_rate ?? metrics.engagement_rate;
   const er = (rawER != null && rawER > 0) ? rawER : undefined;
-  const totalScore = scores.total;
+  const displayViews = viewsEstimated && estimatedViews ? estimatedViews : metrics.views;
+  const totalScore = effectiveScores?.total ?? scores.total;
   const socialEmbedUrl = original_url ? getSocialEmbedUrl(original_url, platform) : null;
   const pLabel = platformLabel(platform);
 
@@ -483,8 +488,8 @@ export default function HeroSection({ data }: HeroSectionProps) {
 
             {/* Views */}
             <StatPill
-              label="Vistas"
-              value={formatNumber(metrics.views)}
+              label={viewsEstimated && estimatedViews ? "Vistas (est.)" : "Vistas"}
+              value={`${viewsEstimated && estimatedViews ? "~" : ""}${formatNumber(displayViews)}`}
               className="card-premium bg-white/[0.03] border-white/[0.08] backdrop-blur-sm text-white"
             />
 

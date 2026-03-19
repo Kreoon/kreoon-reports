@@ -14,6 +14,7 @@ interface ScorecardSectionProps {
   nicheBenchmark?: number;
   sentiment?: string;
   contentTags?: string[];
+  viewsEstimated?: boolean;
 }
 
 const SCORE_BARS: { key: keyof Omit<Scores, "total" | "replication_difficulty">; label: string }[] = [
@@ -91,7 +92,7 @@ function sentimentPill(sentiment: string) {
   return { bg: "bg-gray-500/10 border-gray-500/30", text: "text-gray-400" };
 }
 
-export default function ScorecardSection({ scores, metrics, verdict, engagementRate, niche, nicheBenchmark, sentiment, contentTags }: ScorecardSectionProps) {
+export default function ScorecardSection({ scores, metrics, verdict, engagementRate, niche, nicheBenchmark, sentiment, contentTags, viewsEstimated }: ScorecardSectionProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [hasAnimated, setHasAnimated] = useState(false);
 
@@ -284,9 +285,11 @@ export default function ScorecardSection({ scores, metrics, verdict, engagementR
           {(metrics.views != null && metrics.views > 0) && (
             <div className="card-premium bg-white/[0.03] p-4 flex flex-col items-center gap-1">
               <Eye size={16} className="text-purple-400" />
-              <span className="text-xs text-gray-400 uppercase tracking-wide">Vistas</span>
+              <span className="text-xs text-gray-400 uppercase tracking-wide">
+                Vistas{viewsEstimated ? " (est.)" : ""}
+              </span>
               <span className="text-lg font-bold text-white tabular-nums">
-                {formatNumber(metrics.views)}
+                {viewsEstimated ? "~" : ""}{formatNumber(metrics.views)}
               </span>
             </div>
           )}

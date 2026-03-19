@@ -144,6 +144,60 @@ function safeSuccessMetrics(s: any) {
   };
 }
 
+// ── Parse scores from raw_text fallback ──
+function parseScoresFromRawText(rawText: string) {
+  const defaults = { hook: 0, copy: 0, strategy: 0, production: 0, virality: 0, total: 0, replication_difficulty: 5 };
+  if (!rawText) return defaults;
+
+  // Find Hook score: "Hook ... Score: X/10" or "Hook (0-3s): ... Score: X/10"
+  const hookMatch = rawText.match(/Hook[^]*?Score:\s*(\d+)\/10/i);
+  if (hookMatch) defaults.hook = parseInt(hookMatch[1]);
+
+  // Find CTA/Copy score
+  const ctaMatch = rawText.match(/CTA[^]*?Score:\s*(\d+)\/10/i);
+  // Find formula/copy score
+  const copyMatch = rawText.match(/(?:Fórmula|Copy|Palabras)[^]*?Score:\s*(\d+)\/10/i);
+  defaults.copy = parseInt(copyMatch?.[1] || ctaMatch?.[1] || '0');
+
+  // Strategy score
+  const strategyMatch = rawText.match(/(?:Embudo|Estrategia|Pilar)[^]*?Score:\s*(\d+)\/10/i);
+  if (strategyMatch) defaults.strategy = parseInt(strategyMatch[1]);
+
+  // Production score
+  const prodMatch = rawText.match(/Producción para replicar:\s*(\d+)\/10/i);
+  if (prodMatch) defaults.production = parseInt(prodMatch[1]);
+
+  // Virality score
+  const viralMatch = rawText.match(/Viralidad[^]*?Score:\s*(\d+)\/10/i);
+  if (viralMatch) defaults.virality = parseInt(viralMatch[1]);
+
+  // Calculate total as average of non-zero scores
+  const scoreValues = [defaults.hook, defaults.copy, defaults.strategy, defaults.production, defaults.virality].filter(s => s > 0);
+  if (scoreValues.length > 0) {
+    defaults.total = Math.round(scoreValues.reduce((a, b) => a + b, 0) / scoreValues.length);
+  }
+
+  // Replication difficulty
+  if (prodMatch) defaults.replication_difficulty = parseInt(prodMatch[1]);
+
+  return defaults;
+}
+
+// ── Estimate views when missing ──
+function estimateViews(metrics: any, niche?: string): number | null {
+  const likes = metrics?.likes || 0;
+  const comments = metrics?.comments || 0;
+  if (likes === 0) return null;
+
+  const benchmarks: Record<string, number> = {
+    fitness: 5, food: 4.2, fashion: 3.8, finance: 2.5,
+    education: 4, business: 3.2, beauty: 5, travel: 4.5,
+    motivation: 4, tech: 3, health: 4, general: 3,
+  };
+  const er = benchmarks[(niche || 'general').toLowerCase()] || 3;
+  return Math.round((likes + comments) / (er / 100));
+}
+
 // ── Component ──
 export default function ReportPageClient({ data }: { data: ReportData }) {
   const [activeSection, setActiveSection] = useState('resumen');
@@ -196,13 +250,42 @@ export default function ReportPageClient({ data }: { data: ReportData }) {
   }, []);
 
   const scores = safeScores(data.scores);
-  const metrics = safeMetrics(data.metrics);
+  const rawMetrics = safeMetrics(data.metrics);
   const verdict = safeVerdict(data.verdict);
   const gemini = safeGemini(data.gemini_analysis);
   const strategic = safeStrategic(data.strategic_analysis);
   const productionGuide = safeProductionGuide(data.production_guide);
   const publishStrategy = safePublishStrategy(data.publish_strategy);
   const successMetrics = safeSuccessMetrics(data.success_metrics);
+
+  // Estimate views when missing
+  const viewsEstimated = !rawMetrics.views;
+  const estimatedViewsValue = viewsEstimated ? estimateViews(rawMetrics, data.niche) : null;
+  const metrics = {
+    ...rawMetrics,
+    views: rawMetrics.views || estimatedViewsValue || 0,
+  };
+
+  // Calculate engagement rate from estimated views if needed
+  const effectiveER = (() => {
+    if (data.engagement_rate && data.engagement_rate > 0) return data.engagement_rate;
+    if (rawMetrics.engagement_rate && rawMetrics.engagement_rate > 0) return rawMetrics.engagement_rate;
+    if (metrics.views > 0 && (metrics.likes || metrics.comments)) {
+      return +((((metrics.likes || 0) + (metrics.comments || 0)) / metrics.views) * 100).toFixed(2);
+    }
+    return 0;
+  })();
+
+  // If all scores are 0, try parsing from raw text
+  const effectiveScores = (() => {
+    if (scores.total === 0 && data.strategic_analysis?.raw_text) {
+      const parsed = parseScoresFromRawText(data.strategic_analysis.raw_text);
+      if (parsed.total > 0) {
+        return { ...scores, ...parsed };
+      }
+    }
+    return scores;
+  })();
 
   return (
     <>
@@ -211,7 +294,7 @@ export default function ReportPageClient({ data }: { data: ReportData }) {
       <div className="bg-mesh-gradient min-h-screen">
         <div id="resumen">
           <ErrorBoundary fallback={<SectionError name="Hero" />}>
-            <HeroSection data={data} />
+            <HeroSection data={data} effectiveScores={effectiveScores} viewsEstimated={viewsEstimated && !!estimatedViewsValue} estimatedViews={estimatedViewsValue} effectiveER={effectiveER} />
           </ErrorBoundary>
         </div>
 
@@ -220,14 +303,15 @@ export default function ReportPageClient({ data }: { data: ReportData }) {
         <div id="analysis-sections">
           <ErrorBoundary fallback={<SectionError name="Scorecard" />}>
             <ScorecardSection
-              scores={scores}
+              scores={effectiveScores}
               metrics={metrics}
               verdict={verdict}
-              engagementRate={data.engagement_rate}
+              engagementRate={effectiveER}
               niche={data.niche}
               nicheBenchmark={data.niche_benchmark}
               sentiment={data.sentiment}
               contentTags={data.content_tags}
+              viewsEstimated={viewsEstimated && !!estimatedViewsValue}
             />
           </ErrorBoundary>
         </div>
@@ -267,7 +351,7 @@ export default function ReportPageClient({ data }: { data: ReportData }) {
 
         {strategic.raw_text && (
           <ErrorBoundary fallback={<SectionError name="12 Dimensiones" />}>
-            <StrategicAnalysisSection analysis={strategic} scores={scores} />
+            <StrategicAnalysisSection analysis={strategic} scores={effectiveScores} />
           </ErrorBoundary>
         )}
 

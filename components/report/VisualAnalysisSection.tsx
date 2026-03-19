@@ -430,8 +430,16 @@ function cleanSpecLabel(key: string): string {
 }
 
 function cleanSpecValue(value: string): string {
-  // Strip leading ** or ** with space (markdown artifacts)
-  return value.replace(/^\*{1,2}\s*/, "").replace(/\*{1,2}$/, "").trim();
+  let v = value;
+  // Strip label prefix bleeding into value (e.g. "de cámara:** Frontal...")
+  v = v.replace(/^(?:de\s+\w+:\s*\*?\*?\s*|:\s*\*?\*?\s*)/i, "");
+  // Strip all remaining ** markdown artifacts anywhere
+  v = v.replace(/\*\*/g, "");
+  // Strip leading single * with optional space
+  v = v.replace(/^\*\s*/, "");
+  // Strip leading colon with optional space
+  v = v.replace(/^:\s*/, "");
+  return v.trim();
 }
 
 // ─── Main Component ──────────────────────────────────────────────────────────
