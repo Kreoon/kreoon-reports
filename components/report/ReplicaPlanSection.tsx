@@ -704,13 +704,13 @@ function parseRawReplicas(rawText: string): ParsedReplicas | null {
     blocks[versionStarts[i].version] = lines.slice(startLine, endLine).join("\n");
   }
 
-  // Flexible section header patterns (support with/without emoji, with/without **)
-  const hookHeaderRe       = /###\s*(?:🎣\s*)?(?:\*\*\s*)?HOOK/i;
-  const developmentHeaderRe = /###\s*(?:📝\s*)?(?:\*\*\s*)?(?:DESARROLLO|GUIÓN|SCRIPT)/i;
-  const ctaHeaderRe        = /###\s*(?:📢\s*)?(?:\*\*\s*)?CTA/i;
-  const captionHeaderRe    = /###\s*(?:📝\s*)?(?:\*\*\s*)?CAPTION/i;
-  const productionHeaderRe = /###\s*(?:🎬\s*)?(?:\*\*\s*)?(?:NOTAS?\s*(?:DE\s*)?PRODUCCI[OÓ]N|PRODUCCI[OÓ]N)/i;
-  const briefHeaderRe      = /###\s*(?:👤\s*)?(?:\*\*\s*)?BRIEF/i;
+  // Flexible section header patterns (support any emoji, with/without **)
+  const hookHeaderRe       = /###\s*(?:.\s*)?(?:\*\*\s*)?HOOK/i;
+  const developmentHeaderRe = /###\s*(?:.\s*)?(?:\*\*\s*)?(?:DESARROLLO|GUIÓN|GUION|SCRIPT)/i;
+  const ctaHeaderRe        = /###\s*(?:.\s*)?(?:\*\*\s*)?CTA/i;
+  const captionHeaderRe    = /###\s*(?:.\s*)?(?:\*\*\s*)?CAPTION/i;
+  const productionHeaderRe = /###\s*(?:.\s*)?(?:\*\*\s*)?(?:NOTAS?\s*(?:DE\s*)?PRODUCCI[OÓ]N|PRODUCCI[OÓ]N)/i;
+  const briefHeaderRe      = /###\s*(?:.\s*)?(?:\*\*\s*)?BRIEF/i;
 
   // Generic "next section" pattern: any ### header
   const nextSectionRe = /^###\s+/m;
@@ -737,6 +737,7 @@ function parseRawReplicas(rawText: string): ParsedReplicas | null {
       let inCodeBlock = false;
       const scriptLinesArr: string[] = [];
 
+      let foundGuion = false;
       for (const line of hookLines) {
         if (line.trim().startsWith("```")) {
           inCodeBlock = !inCodeBlock;
@@ -744,9 +745,25 @@ function parseRawReplicas(rawText: string): ParsedReplicas | null {
         }
         if (inCodeBlock) {
           scriptLinesArr.push(line);
-        } else if (scriptLinesArr.length === 0) {
+        } else {
           const cleaned = line.replace(/\*\*/g, "").trim();
-          if (cleaned && !cleaned.startsWith("###") && !cleaned.match(/^Y?\s*GUI[OÓ]N/i)) {
+          // Check if this is a "Guión:" line — everything after it is script
+          if (cleaned.match(/^Gui[oó]n:/i)) {
+            foundGuion = true;
+            const guionContent = cleaned.replace(/^Gui[oó]n:\s*/i, "").trim();
+            if (guionContent) scriptLinesArr.push(guionContent);
+            continue;
+          }
+          // Check for "Texto:" label — this is the hook text
+          if (cleaned.match(/^Texto:/i)) {
+            const textoContent = cleaned.replace(/^Texto:\s*/i, "").trim();
+            if (textoContent) hookTextLines.push(textoContent);
+            continue;
+          }
+          if (foundGuion) {
+            // After "Guión:" everything goes to script
+            if (cleaned) scriptLinesArr.push(cleaned);
+          } else if (cleaned && !cleaned.startsWith("###")) {
             hookTextLines.push(cleaned);
           }
         }
@@ -755,14 +772,17 @@ function parseRawReplicas(rawText: string): ParsedReplicas | null {
       scriptText = scriptLinesArr.join("\n").trim();
     }
 
-    // ── Development / Script section (timestamped lines) ──
+    // ── Development / Script section (timestamped lines + quoted text) ──
     const devSection = extractFlexibleSection(block, developmentHeaderRe);
-    if (devSection && !scriptText) {
-      // Use development section as script if hook didn't have a code block
-      scriptText = devSection;
-    } else if (devSection && scriptText) {
-      // Append development lines to script
-      scriptText = scriptText + "\n" + devSection;
+    if (devSection) {
+      // Extract meaningful script lines: timestamped, quoted, or bulleted
+      const devLines = devSection.split("\n")
+        .map(l => l.replace(/\*\*/g, "").trim())
+        .filter(l => l && !l.startsWith("###") && !l.match(/^(?:Aplicando|Autoridad|Escasez|Texto sincronizado)/i));
+      const devScript = devLines.join("\n").trim();
+      if (devScript) {
+        scriptText = scriptText ? scriptText + "\n" + devScript : devScript;
+      }
     }
 
     // ── CTA section - append to script ──
@@ -858,23 +878,42 @@ function ParsedVersionTabContent({
         </div>
       )}
 
-      {/* Script block */}
+      {/* Script / Director Mode block */}
       {version.scriptText && (
-        <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">Guión</p>
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4 font-mono text-xs leading-relaxed space-y-1 overflow-x-auto">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">Guión — Modo Director</p>
+            </div>
+            <CopyButton text={version.scriptText} label="Copiar Guión" />
+          </div>
+          <div className="card-premium border-l-4 border-kreoon rounded-xl p-5 space-y-3 overflow-x-auto">
             {version.scriptLines.length > 0
               ? version.scriptLines.map((line, i) => (
-                  <div key={i} className="flex gap-3">
+                  <div key={i} className="flex gap-3 py-1.5 border-b border-white/[0.04] last:border-0">
                     {line.time && (
-                      <span className="text-kreoon font-semibold whitespace-nowrap min-w-[70px]">
-                        [{line.time}]
+                      <span className="text-kreoon font-mono font-bold whitespace-nowrap min-w-[80px] text-sm">
+                        {line.time}
                       </span>
                     )}
-                    <span className="text-gray-300">{line.text}</span>
+                    <div className="flex-1">
+                      <p className="text-white text-sm leading-relaxed">{line.text}</p>
+                      {line.direction && (
+                        <p className="text-gray-500 text-xs mt-0.5 italic">↳ {line.direction}</p>
+                      )}
+                    </div>
                   </div>
                 ))
-              : <pre className="text-gray-300 whitespace-pre-wrap">{version.scriptText}</pre>
+              : version.scriptText.split("\n").filter(l => l.trim()).map((line, i) => {
+                  const cleaned = line.replace(/^[-•]\s*/, "").replace(/^[""]|[""]$/g, "").trim();
+                  if (!cleaned) return null;
+                  return (
+                    <div key={i} className="py-1.5 border-b border-white/[0.04] last:border-0">
+                      <p className="text-white text-sm leading-relaxed">{cleaned}</p>
+                    </div>
+                  );
+                })
             }
           </div>
         </div>
