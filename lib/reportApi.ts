@@ -3,7 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import type { ReportData } from '@/types/report';
 
 const REPORT_TTL_DAYS = 30;
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kreoon.app';
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? 'https://jarvis-reports.vercel.app').trim();
 
 // ─── Create ──────────────────────────────────────────────────────────────────
 

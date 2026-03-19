@@ -9,6 +9,11 @@ interface ScorecardSectionProps {
   scores: Scores;
   metrics: Metrics;
   verdict: Verdict;
+  engagementRate?: number;
+  niche?: string;
+  nicheBenchmark?: number;
+  sentiment?: string;
+  contentTags?: string[];
 }
 
 const SCORE_BARS: { key: keyof Omit<Scores, "total" | "replication_difficulty">; label: string }[] = [
@@ -78,7 +83,15 @@ function ScoreBar({
   );
 }
 
-export default function ScorecardSection({ scores, metrics, verdict }: ScorecardSectionProps) {
+function sentimentPill(sentiment: string) {
+  const s = sentiment.toLowerCase();
+  if (s === "positive" || s === "positivo") return { bg: "bg-emerald-500/10 border-emerald-500/30", text: "text-emerald-400" };
+  if (s === "negative" || s === "negativo") return { bg: "bg-red-500/10 border-red-500/30", text: "text-red-400" };
+  if (s === "mixed" || s === "mixto") return { bg: "bg-amber-500/10 border-amber-500/30", text: "text-amber-400" };
+  return { bg: "bg-gray-500/10 border-gray-500/30", text: "text-gray-400" };
+}
+
+export default function ScorecardSection({ scores, metrics, verdict, engagementRate, niche, nicheBenchmark, sentiment, contentTags }: ScorecardSectionProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [hasAnimated, setHasAnimated] = useState(false);
 
@@ -103,9 +116,10 @@ export default function ScorecardSection({ scores, metrics, verdict }: Scorecard
   const totalColor = scoreColor(scores.total);
   const allScoresZero = scores.total === 0;
   const hasVerdictData = verdict.works.length > 0 || verdict.improve.length > 0;
+  const erValue = engagementRate ?? metrics.engagement_rate;
   const erFormatted =
-    metrics.engagement_rate !== undefined
-      ? `${metrics.engagement_rate.toFixed(2)}%`
+    erValue !== undefined && erValue !== 0
+      ? `${erValue.toFixed(2)}%`
       : "—";
 
   return (
@@ -304,6 +318,48 @@ export default function ScorecardSection({ scores, metrics, verdict }: Scorecard
           </div>
 
         </div>
+
+        {/* ── Niche benchmark + Sentiment ── */}
+        {(niche || sentiment) && (
+          <>
+            <div className="divider-glow" />
+            <div className="flex flex-wrap items-center gap-3">
+              {niche && (
+                <div className="card-premium bg-white/[0.03] px-4 py-2 flex items-center gap-2">
+                  <span className="text-xs text-gray-400 uppercase tracking-wide">Nicho:</span>
+                  <span className="text-sm font-semibold text-white">{niche}</span>
+                  {nicheBenchmark != null && (
+                    <span className="text-xs text-purple-400 font-medium ml-1">
+                      (bench: {nicheBenchmark}% ER)
+                    </span>
+                  )}
+                </div>
+              )}
+              {sentiment && (() => {
+                const sp = sentimentPill(sentiment);
+                return (
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${sp.bg} ${sp.text}`}>
+                    Sentimiento: {sentiment}
+                  </span>
+                );
+              })()}
+            </div>
+          </>
+        )}
+
+        {/* ── Content tags ── */}
+        {contentTags && contentTags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {contentTags.map((tag, i) => (
+              <span
+                key={i}
+                className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-500/10 border border-purple-500/20 text-purple-300"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
 
       </div>
     </section>

@@ -34,6 +34,7 @@ import dynamic from 'next/dynamic';
 const HeroSection = dynamic(() => import('@/components/report/HeroSection'), { ssr: false });
 const ScorecardSection = dynamic(() => import('@/components/report/ScorecardSection'), { ssr: false });
 const VisualAnalysisSection = dynamic(() => import('@/components/report/VisualAnalysisSection'), { ssr: false });
+const ContentMetadataSection = dynamic(() => import('@/components/report/ContentMetadataSection'), { ssr: false });
 const StrategicAnalysisSection = dynamic(() => import('@/components/report/StrategicAnalysisSection'), { ssr: false });
 const VerdictSection = dynamic(() => import('@/components/report/VerdictSection'), { ssr: false });
 const ReplicaPlanSection = dynamic(() => import('@/components/report/ReplicaPlanSection'), { ssr: false });
@@ -218,15 +219,45 @@ export default function ReportPageClient({ data }: { data: ReportData }) {
 
         <div id="analysis-sections">
           <ErrorBoundary fallback={<SectionError name="Scorecard" />}>
-            <ScorecardSection scores={scores} metrics={metrics} verdict={verdict} />
+            <ScorecardSection
+              scores={scores}
+              metrics={metrics}
+              verdict={verdict}
+              engagementRate={data.engagement_rate}
+              niche={data.niche}
+              nicheBenchmark={data.niche_benchmark}
+              sentiment={data.sentiment}
+              contentTags={data.content_tags}
+            />
           </ErrorBoundary>
         </div>
 
         <div className="divider-glow max-w-4xl mx-auto my-2" />
 
+        {/* Content Metadata */}
+        <ErrorBoundary fallback={<SectionError name="Metadata" />}>
+          <ContentMetadataSection
+            caption={data.caption}
+            hashtags={data.hashtags}
+            mentions={data.mentions}
+            topComments={data.top_comments}
+            soundUsed={data.sound_used}
+            publishedAt={data.published_at}
+            originalUrl={data.original_url}
+          />
+        </ErrorBoundary>
+
+        <div className="divider-glow max-w-4xl mx-auto my-2" />
+
         {gemini.full_analysis && (
           <ErrorBoundary fallback={<SectionError name="Análisis Visual" />}>
-            <VisualAnalysisSection gemini={gemini} />
+            <VisualAnalysisSection
+              gemini={gemini}
+              geminiProductionSpecs={data.gemini_production_specs}
+              geminiEmotions={data.gemini_emotions}
+              aspectRatio={data.aspect_ratio}
+              videoQuality={data.video_quality}
+            />
           </ErrorBoundary>
         )}
 

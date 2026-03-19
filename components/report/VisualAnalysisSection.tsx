@@ -363,9 +363,13 @@ function ProductionSpecsGrid({ production }: { production: GeminiAnalysis["produ
 
 interface VisualAnalysisSectionProps {
   gemini: GeminiAnalysis;
+  geminiProductionSpecs?: Record<string, string>;
+  geminiEmotions?: { timestamp: string; emotion: string }[];
+  aspectRatio?: string;
+  videoQuality?: string;
 }
 
-export default function VisualAnalysisSection({ gemini }: VisualAnalysisSectionProps) {
+export default function VisualAnalysisSection({ gemini, geminiProductionSpecs, geminiEmotions, aspectRatio, videoQuality }: VisualAnalysisSectionProps) {
   const hasScenes = gemini.scenes && gemini.scenes.length > 0;
 
   // Try to extract tone from full_analysis as a best-effort hint
@@ -454,6 +458,68 @@ export default function VisualAnalysisSection({ gemini }: VisualAnalysisSectionP
                   Especificaciones de producción
                 </h3>
                 <ProductionSpecsGrid production={gemini.production} />
+              </div>
+            )}
+
+            {/* 5. Info pills: aspect ratio + video quality */}
+            {(aspectRatio || videoQuality) && (
+              <div className="flex flex-wrap gap-2">
+                {aspectRatio && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border bg-white/5 border-white/10 text-gray-300">
+                    <LayoutTemplate className="w-3 h-3 text-purple-400" />
+                    {aspectRatio}
+                  </span>
+                )}
+                {videoQuality && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border bg-white/5 border-white/10 text-gray-300">
+                    <Eye className="w-3 h-3 text-purple-400" />
+                    {videoQuality}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* 6. Gemini Production Specs (desglosado) — extra key-value grid */}
+            {geminiProductionSpecs && Object.keys(geminiProductionSpecs).length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                  <span className="w-1 h-4 rounded-full bg-kreoon inline-block" />
+                  Detalles de producción (Gemini)
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {Object.entries(geminiProductionSpecs).map(([key, value], i) => (
+                    <motion.div
+                      key={key}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.3, delay: i * 0.05 }}
+                      className="rounded-xl border border-white/10 bg-white/[0.03] p-3.5 flex flex-col gap-1"
+                    >
+                      <span className="text-xs font-medium text-gray-400 capitalize">{key.replace(/_/g, " ")}</span>
+                      <span className="text-sm font-semibold text-white break-words">{value}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 7. Gemini Emotions timeline */}
+            {geminiEmotions && geminiEmotions.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                  <span className="w-1 h-4 rounded-full bg-kreoon inline-block" />
+                  Timeline de emociones (Gemini)
+                </h3>
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-2">
+                  {geminiEmotions.map((item, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <span className="text-xs font-mono text-gray-400 w-12 flex-shrink-0">{item.timestamp}</span>
+                      <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${emotionColor(item.emotion)}`} />
+                      <span className="text-sm text-gray-300 capitalize">{item.emotion}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </>

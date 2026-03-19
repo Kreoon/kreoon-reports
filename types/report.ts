@@ -25,6 +25,50 @@ export interface ReportData {
   success_metrics: SuccessMetrics;
   teleprompter_script: string | null;
   branding: Branding;
+
+  // Creator extended
+  creator_verified?: boolean;
+  creator_bio?: string;
+  creator_profile_url?: string;
+
+  // Engagement
+  top_comments?: { user: string; text: string; likes: number }[];
+  engagement_rate?: number;
+
+  // Content
+  title?: string;
+  description?: string;
+  mentions?: string[];
+
+  // Media
+  sound_used?: string;
+  thumbnail_url?: string;
+  published_at?: string;
+  aspect_ratio?: string;
+  video_quality?: string;
+  file_size_mb?: number;
+
+  // Gemini desglosado
+  gemini_transcription?: string;
+  gemini_hook_analysis?: string;
+  gemini_emotions?: { timestamp: string; emotion: string }[];
+  gemini_production_specs?: Record<string, string>;
+
+  // Tracking
+  analyzed_by?: string;
+  analysis_duration_ms?: number;
+  report_views?: number;
+  last_viewed_at?: string;
+
+  // Benchmark
+  niche?: string;
+  niche_benchmark?: number;
+  performance_vs_niche?: string;
+
+  // Classification
+  content_tags?: string[];
+  language?: string;
+  sentiment?: string;
 }
 
 export type Platform = 'instagram' | 'tiktok' | 'youtube' | 'twitter' | 'linkedin' | 'facebook';
