@@ -704,13 +704,13 @@ function parseRawReplicas(rawText: string): ParsedReplicas | null {
     blocks[versionStarts[i].version] = lines.slice(startLine, endLine).join("\n");
   }
 
-  // Flexible section header patterns (support any emoji, with/without **)
-  const hookHeaderRe       = /###\s*(?:.\s*)?(?:\*\*\s*)?HOOK/i;
-  const developmentHeaderRe = /###\s*(?:.\s*)?(?:\*\*\s*)?(?:DESARROLLO|GUIÓN|GUION|SCRIPT)/i;
-  const ctaHeaderRe        = /###\s*(?:.\s*)?(?:\*\*\s*)?CTA/i;
-  const captionHeaderRe    = /###\s*(?:.\s*)?(?:\*\*\s*)?CAPTION/i;
-  const productionHeaderRe = /###\s*(?:.\s*)?(?:\*\*\s*)?(?:NOTAS?\s*(?:DE\s*)?PRODUCCI[OÓ]N|PRODUCCI[OÓ]N)/i;
-  const briefHeaderRe      = /###\s*(?:.\s*)?(?:\*\*\s*)?BRIEF/i;
+  // Flexible section header patterns (support any emoji including multi-byte, with/without **)
+  const hookHeaderRe       = /###\s*(?:\S+\s+)?(?:\*\*\s*)?HOOK/i;
+  const developmentHeaderRe = /###\s*(?:\S+\s+)?(?:\*\*\s*)?(?:DESARROLLO|GUIÓN|GUION|SCRIPT)/i;
+  const ctaHeaderRe        = /###\s*(?:\S+\s+)?(?:\*\*\s*)?CTA/i;
+  const captionHeaderRe    = /###\s*(?:\S+\s+)?(?:\*\*\s*)?CAPTION/i;
+  const productionHeaderRe = /###\s*(?:\S+\s+)?(?:\*\*\s*)?(?:NOTAS?\s*(?:DE\s*)?PRODUCCI[OÓ]N|PRODUCCI[OÓ]N)/i;
+  const briefHeaderRe      = /###\s*(?:\S+\s+)?(?:\*\*\s*)?BRIEF/i;
 
   // Generic "next section" pattern: any ### header
   const nextSectionRe = /^###\s+/m;
@@ -835,6 +835,22 @@ function parseRawReplicas(rawText: string): ParsedReplicas | null {
 
     // Parse script lines (timestamped or plain)
     const parsedScriptLines = scriptText ? parseTimestampedScript(scriptText) : [];
+
+    // Fallback: if nothing was parsed but block has content, use full block
+    const hasContent = hook || caption || scriptText;
+    if (!hasContent && block.trim().length > 50) {
+      // Extract any timestamped lines from the full block as script
+      const fullScriptLines = parseTimestampedScript(block);
+      return {
+        hook: "",
+        scriptText: block.trim(),
+        scriptLines: fullScriptLines.length > 0 ? fullScriptLines : [],
+        caption: block.trim(),
+        hashtags: "",
+        productionNotes: "",
+        brief: "",
+      };
+    }
 
     return {
       hook,
