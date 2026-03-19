@@ -32,6 +32,7 @@ function SectionError({ name }: { name: string }) {
 import dynamic from 'next/dynamic';
 
 const HeroSection = dynamic(() => import('@/components/report/HeroSection'), { ssr: false });
+const WhatsAppFloat = dynamic(() => import('@/components/report/WhatsAppFloat'), { ssr: false });
 const ScorecardSection = dynamic(() => import('@/components/report/ScorecardSection'), { ssr: false });
 const VisualAnalysisSection = dynamic(() => import('@/components/report/VisualAnalysisSection'), { ssr: false });
 const ContentMetadataSection = dynamic(() => import('@/components/report/ContentMetadataSection'), { ssr: false });
@@ -414,6 +415,8 @@ export default function ReportPageClient({ data }: { data: ReportData }) {
           />
         </ErrorBoundary>
       )}
+
+      <WhatsAppFloat />
     </>
   );
 }
