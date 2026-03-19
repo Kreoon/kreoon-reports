@@ -365,6 +365,10 @@ export interface BrandDiagnosisData {
     engagement: number;
     branding: number;
   };
+  competitor_insights: string;
+  ad_insights: string;
+  competitors: BrandCompetitor[];
+  ad_library: { brand_ads: BrandAdEntry[]; competitor_ads: BrandAdEntry[] };
   opportunities: BrandOpportunity[];
   service_proposal: BrandServiceProposal;
 }
@@ -400,12 +404,33 @@ export interface BrandOpportunity {
   priority: number;
 }
 
+export interface BrandCompetitor {
+  name: string;
+  platform: string;
+  username: string;
+  url: string;
+  followers?: number;
+  engagement_rate?: number;
+  posts_per_week?: number;
+  top_posts: BrandAnalyzedPost[];
+  why_successful: string;
+}
+
+export interface BrandAdEntry {
+  brand: string;
+  platform: string;
+  ad_text: string;
+  status: 'active' | 'inactive';
+  media_type?: string;
+}
+
 export interface BrandServiceProposal {
   packages: {
     name: string;
     description: string;
     includes: string[];
-    price_range: string;
+    price: string;
+    price_range?: string;
     ideal_for: string;
   }[];
   recommended: string;

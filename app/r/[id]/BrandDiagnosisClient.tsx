@@ -51,6 +51,10 @@ const StrategicDiagnosis = dynamic(
   () => import("@/components/diagnosis/StrategicDiagnosis"),
   { ssr: false },
 );
+const CompetitorAnalysis = dynamic(
+  () => import("@/components/diagnosis/CompetitorAnalysis"),
+  { ssr: false },
+);
 const Opportunities = dynamic(
   () => import("@/components/diagnosis/Opportunities"),
   { ssr: false },
@@ -100,6 +104,15 @@ export default function BrandDiagnosisClient({ data }: Props) {
 
       <ErrorBoundary fallback={<SectionError name="Diagnóstico Estratégico" />}>
         <StrategicDiagnosis diagnosis={diagnosis} />
+      </ErrorBoundary>
+
+      <ErrorBoundary fallback={<SectionError name="Análisis Competitivo" />}>
+        <CompetitorAnalysis
+          competitors={diagnosis.competitors || []}
+          competitorInsights={diagnosis.competitor_insights || ""}
+          adInsights={diagnosis.ad_insights || ""}
+          adLibrary={diagnosis.ad_library || { brand_ads: [], competitor_ads: [] }}
+        />
       </ErrorBoundary>
 
       <ErrorBoundary fallback={<SectionError name="Oportunidades" />}>

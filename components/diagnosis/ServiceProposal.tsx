@@ -49,7 +49,7 @@ export default function ServiceProposal({ proposal, brandName }: Props) {
 
                 {/* Price */}
                 <div className="text-2xl font-bold text-kreoon">
-                  {pkg.price_range}
+                  {pkg.price || pkg.price_range}
                 </div>
 
                 {/* Ideal for */}
