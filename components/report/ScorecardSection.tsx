@@ -117,10 +117,8 @@ export default function ScorecardSection({ scores, metrics, verdict, engagementR
   const allScoresZero = scores.total === 0;
   const hasVerdictData = verdict.works.length > 0 || verdict.improve.length > 0;
   const erValue = engagementRate ?? metrics.engagement_rate;
-  const erFormatted =
-    erValue !== undefined && erValue !== 0
-      ? `${erValue.toFixed(2)}%`
-      : "—";
+  const hasER = erValue != null && erValue > 0;
+  const erFormatted = hasER ? `${erValue.toFixed(2)}%` : "Sin datos";
 
   return (
     <section

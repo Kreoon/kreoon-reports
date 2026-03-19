@@ -313,7 +313,8 @@ interface HeroSectionProps {
 
 export default function HeroSection({ data }: HeroSectionProps) {
   const { platform, content_type, creator_username, creator_followers, duration_seconds, metrics, drive_media_id, scores, original_url, creator_verified, creator_bio, published_at, engagement_rate, niche, sound_used } = data;
-  const er = engagement_rate ?? metrics.engagement_rate;
+  const rawER = engagement_rate ?? metrics.engagement_rate;
+  const er = (rawER != null && rawER > 0) ? rawER : undefined;
   const totalScore = scores.total;
   const socialEmbedUrl = original_url ? getSocialEmbedUrl(original_url, platform) : null;
   const pLabel = platformLabel(platform);

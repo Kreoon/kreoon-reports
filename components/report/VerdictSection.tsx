@@ -226,11 +226,13 @@ function ERBenchmarkRow({ metrics }: { metrics: Metrics }) {
   const er = metrics.engagement_rate;
   const benchmark = getNicheBenchmark();
 
-  if (er === undefined || er === null) {
+  const hasNoER = er === undefined || er === null || er === 0;
+
+  if (hasNoER) {
     return (
       <div className="card-premium flex items-center gap-2 px-4 py-3 text-sm text-gray-500">
         <Minus size={14} />
-        <span>Sin datos de engagement disponibles</span>
+        <span>Sin suficientes datos para calcular ER</span>
       </div>
     );
   }

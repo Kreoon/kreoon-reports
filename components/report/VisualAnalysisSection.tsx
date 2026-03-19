@@ -359,6 +359,81 @@ function ProductionSpecsGrid({ production }: { production: GeminiAnalysis["produ
   );
 }
 
+// ─── Emotion cleaning helpers ────────────────────────────────────────────────
+
+const EMOTION_LABEL_MAP: Record<string, string> = {
+  "conversacional": "Conversacional",
+  "de anticipación": "Anticipación",
+  "de anticipacion": "Anticipación",
+  "conversacional, explicativo": "Explicativo",
+  "explicativo": "Explicativo",
+};
+
+function cleanEmotion(raw: string): string {
+  // Strip trailing punctuation, parentheses, extra whitespace
+  let cleaned = raw.replace(/[\)\(]+/g, "").replace(/[.,;:!?]+$/, "").trim();
+  // Normalize to lowercase for lookup
+  const key = cleaned.toLowerCase();
+  if (EMOTION_LABEL_MAP[key]) return EMOTION_LABEL_MAP[key];
+  // Capitalize first letter as fallback
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+}
+
+function dedupeConsecutiveEmotions(
+  emotions: { timestamp: string; emotion: string }[]
+): { timestamp: string; emotion: string }[] {
+  if (emotions.length === 0) return [];
+  const result: { timestamp: string; emotion: string }[] = [];
+  let consecutiveCount = 1;
+  let prev = cleanEmotion(emotions[0].emotion);
+
+  result.push({ timestamp: emotions[0].timestamp, emotion: prev });
+
+  for (let i = 1; i < emotions.length; i++) {
+    const current = cleanEmotion(emotions[i].emotion);
+    if (current === prev) {
+      consecutiveCount++;
+      // If same emotion appears 3+ times consecutively, skip
+      if (consecutiveCount >= 3) continue;
+    } else {
+      consecutiveCount = 1;
+    }
+    prev = current;
+    result.push({ timestamp: emotions[i].timestamp, emotion: current });
+  }
+  return result;
+}
+
+function allEmotionsSame(emotions: { timestamp: string; emotion: string }[]): string | null {
+  if (emotions.length === 0) return null;
+  const first = cleanEmotion(emotions[0].emotion);
+  const allSame = emotions.every((e) => cleanEmotion(e.emotion) === first);
+  return allSame ? first : null;
+}
+
+// ─── Production specs cleaning helpers ──────────────────────────────────────
+
+const SPEC_LABEL_MAP: Record<string, string> = {
+  plano: "Plano",
+  angulo: "Ángulo",
+  movimiento: "Movimiento",
+  iluminacion: "Iluminación",
+  audio: "Audio",
+  aspecto: "Aspecto",
+  calidad: "Calidad",
+  duracion: "Duración",
+};
+
+function cleanSpecLabel(key: string): string {
+  const normalized = key.replace(/_/g, " ").toLowerCase();
+  return SPEC_LABEL_MAP[normalized] ?? key.replace(/_/g, " ").charAt(0).toUpperCase() + key.replace(/_/g, " ").slice(1);
+}
+
+function cleanSpecValue(value: string): string {
+  // Strip leading ** or ** with space (markdown artifacts)
+  return value.replace(/^\*{1,2}\s*/, "").replace(/\*{1,2}$/, "").trim();
+}
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 interface VisualAnalysisSectionProps {
@@ -496,8 +571,8 @@ export default function VisualAnalysisSection({ gemini, geminiProductionSpecs, g
                       transition={{ duration: 0.3, delay: i * 0.05 }}
                       className="rounded-xl border border-white/10 bg-white/[0.03] p-3.5 flex flex-col gap-1"
                     >
-                      <span className="text-xs font-medium text-gray-400 capitalize">{key.replace(/_/g, " ")}</span>
-                      <span className="text-sm font-semibold text-white break-words">{value}</span>
+                      <span className="text-xs font-medium text-gray-400">{cleanSpecLabel(key)}</span>
+                      <span className="text-sm font-semibold text-white break-words">{cleanSpecValue(value)}</span>
                     </motion.div>
                   ))}
                 </div>
@@ -505,23 +580,37 @@ export default function VisualAnalysisSection({ gemini, geminiProductionSpecs, g
             )}
 
             {/* 7. Gemini Emotions timeline */}
-            {geminiEmotions && geminiEmotions.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                  <span className="w-1 h-4 rounded-full bg-kreoon inline-block" />
-                  Timeline de emociones (Gemini)
-                </h3>
-                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-2">
-                  {geminiEmotions.map((item, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <span className="text-xs font-mono text-gray-400 w-12 flex-shrink-0">{item.timestamp}</span>
-                      <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${emotionColor(item.emotion)}`} />
-                      <span className="text-sm text-gray-300 capitalize">{item.emotion}</span>
-                    </div>
-                  ))}
+            {geminiEmotions && geminiEmotions.length > 0 && (() => {
+              const predominant = allEmotionsSame(geminiEmotions);
+              const deduped = predominant ? [] : dedupeConsecutiveEmotions(geminiEmotions);
+
+              return (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                    <span className="w-1 h-4 rounded-full bg-kreoon inline-block" />
+                    Timeline de emociones (Gemini)
+                  </h3>
+                  <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-2">
+                    {predominant ? (
+                      <div className="flex items-center gap-3">
+                        <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${emotionColor(predominant)}`} />
+                        <span className="text-sm text-gray-300">
+                          Tono predominante: <span className="font-semibold text-white">{predominant}</span>
+                        </span>
+                      </div>
+                    ) : (
+                      deduped.map((item, i) => (
+                        <div key={i} className="flex items-center gap-3">
+                          <span className="text-xs font-mono text-gray-400 w-12 flex-shrink-0">{item.timestamp}</span>
+                          <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${emotionColor(item.emotion)}`} />
+                          <span className="text-sm text-gray-300">{item.emotion}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </>
         );
       })()}

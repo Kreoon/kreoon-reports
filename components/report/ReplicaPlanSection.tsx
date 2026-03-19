@@ -678,27 +678,64 @@ function extractSection(block: string, startPattern: RegExp, endPattern?: RegExp
 }
 
 function parseRawReplicas(rawText: string): ParsedReplicas | null {
-  // Split on version headers
-  const versionSplits = rawText.split(/## 📋\s*\*\*VERSIÓN\s*/);
-  if (versionSplits.length < 4) return null; // Need at least 3 versions + preamble
+  // Split on version headers - support both old and new formats:
+  // Old: ## 📋 **VERSIÓN 1: FIEL**  /  ## 📋 **VERSIÓN 2: MEJORADA**  /  ## 📋 **VERSIÓN 3: KREOON UGC**
+  // New: ## V1 FIEL:  /  ## V2 MEJORADA:  /  ## V3 KREOON UGC:
+  const versionHeaderRegex = /^##\s+(?:📋\s*\*\*\s*)?(?:VERSIÓN\s+)?V?([123])\s*[:\s]*(?:\*\*\s*)?(?:FIEL|MEJORADA|KREOON)/im;
 
-  const sectionHeaderPattern = /###\s*(?:🎣|📝|🎬|👤|📊|🏷️|#️⃣|💡|📋)/;
+  // Find all version header positions
+  const lines = rawText.split("\n");
+  const versionStarts: { version: number; lineIdx: number }[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const match = lines[i].match(versionHeaderRegex);
+    if (match) {
+      versionStarts.push({ version: parseInt(match[1], 10), lineIdx: i });
+    }
+  }
+
+  if (versionStarts.length < 3) return null; // Need all 3 versions
+
+  // Extract blocks for each version
+  const blocks: Record<number, string> = {};
+  for (let i = 0; i < versionStarts.length; i++) {
+    const startLine = versionStarts[i].lineIdx + 1; // skip the header line itself
+    const endLine = i + 1 < versionStarts.length ? versionStarts[i + 1].lineIdx : lines.length;
+    blocks[versionStarts[i].version] = lines.slice(startLine, endLine).join("\n");
+  }
+
+  // Flexible section header patterns (support with/without emoji, with/without **)
+  const hookHeaderRe       = /###\s*(?:🎣\s*)?(?:\*\*\s*)?HOOK/i;
+  const developmentHeaderRe = /###\s*(?:📝\s*)?(?:\*\*\s*)?(?:DESARROLLO|GUIÓN|SCRIPT)/i;
+  const ctaHeaderRe        = /###\s*(?:📢\s*)?(?:\*\*\s*)?CTA/i;
+  const captionHeaderRe    = /###\s*(?:📝\s*)?(?:\*\*\s*)?CAPTION/i;
+  const productionHeaderRe = /###\s*(?:🎬\s*)?(?:\*\*\s*)?(?:NOTAS?\s*(?:DE\s*)?PRODUCCI[OÓ]N|PRODUCCI[OÓ]N)/i;
+  const briefHeaderRe      = /###\s*(?:👤\s*)?(?:\*\*\s*)?BRIEF/i;
+
+  // Generic "next section" pattern: any ### header
+  const nextSectionRe = /^###\s+/m;
+
+  function extractFlexibleSection(block: string, startRe: RegExp): string {
+    const startMatch = block.match(startRe);
+    if (!startMatch) return "";
+    const startIdx = block.indexOf(startMatch[0]) + startMatch[0].length;
+    // Find next ### header after start
+    const rest = block.slice(startIdx);
+    const endMatch = rest.match(nextSectionRe);
+    const endIdx = endMatch ? startIdx + rest.indexOf(endMatch[0]) : block.length;
+    return block.slice(startIdx, endIdx).trim();
+  }
 
   function parseVersionBlock(block: string): ParsedVersion {
-    // Extract hook section: between HOOK header and next section
+    // ── Hook ──
     let hook = "";
     let scriptText = "";
-    const hookSection = extractSection(
-      block,
-      /###\s*🎣\s*\*\*HOOK/i,
-      /###\s*(?:📝|🎬|👤|📊|🏷️|#️⃣|💡|📋)/
-    );
+    const hookSection = extractFlexibleSection(block, hookHeaderRe);
     if (hookSection) {
-      // Hook text is typically the first line(s) before code block
       const hookLines = hookSection.split("\n");
       const hookTextLines: string[] = [];
       let inCodeBlock = false;
-      const scriptLines: string[] = [];
+      const scriptLinesArr: string[] = [];
 
       for (const line of hookLines) {
         if (line.trim().startsWith("```")) {
@@ -706,33 +743,44 @@ function parseRawReplicas(rawText: string): ParsedReplicas | null {
           continue;
         }
         if (inCodeBlock) {
-          scriptLines.push(line);
-        } else if (!inCodeBlock && scriptLines.length === 0) {
-          // Before code block = hook text
+          scriptLinesArr.push(line);
+        } else if (scriptLinesArr.length === 0) {
           const cleaned = line.replace(/\*\*/g, "").trim();
-          if (cleaned && !cleaned.startsWith("###") && !cleaned.match(/^Y GUIÓN/i) && !cleaned.match(/^GUIÓN/i)) {
+          if (cleaned && !cleaned.startsWith("###") && !cleaned.match(/^Y?\s*GUI[OÓ]N/i)) {
             hookTextLines.push(cleaned);
           }
         }
       }
       hook = hookTextLines.join("\n").trim();
-      scriptText = scriptLines.join("\n").trim();
+      scriptText = scriptLinesArr.join("\n").trim();
     }
 
-    // Extract caption section
+    // ── Development / Script section (timestamped lines) ──
+    const devSection = extractFlexibleSection(block, developmentHeaderRe);
+    if (devSection && !scriptText) {
+      // Use development section as script if hook didn't have a code block
+      scriptText = devSection;
+    } else if (devSection && scriptText) {
+      // Append development lines to script
+      scriptText = scriptText + "\n" + devSection;
+    }
+
+    // ── CTA section - append to script ──
+    const ctaSection = extractFlexibleSection(block, ctaHeaderRe);
+    if (ctaSection) {
+      scriptText = (scriptText ? scriptText + "\n" : "") + ctaSection;
+    }
+
+    // ── Caption ──
     let caption = "";
     let hashtags = "";
-    const captionSection = extractSection(
-      block,
-      /###\s*📝\s*\*\*CAPTION/i,
-      /###\s*(?:🎬|👤|📊|🏷️|💡|📋)/
-    );
+    const captionSection = extractFlexibleSection(block, captionHeaderRe);
     if (captionSection) {
       const captionLines: string[] = [];
       const hashtagLines: string[] = [];
       for (const line of captionSection.split("\n")) {
         const trimmed = line.trim();
-        if (trimmed.match(/^#\w/) || trimmed.match(/^#[A-Za-z]/)) {
+        if (trimmed.match(/^#[A-Za-zÀ-ÿ]/)) {
           hashtagLines.push(trimmed);
         } else {
           const cleaned = trimmed.replace(/\*\*/g, "").replace(/^```.*$/, "").trim();
@@ -745,21 +793,13 @@ function parseRawReplicas(rawText: string): ParsedReplicas | null {
       hashtags = hashtagLines.join(" ").trim();
     }
 
-    // Extract production notes
-    const productionNotes = extractSection(
-      block,
-      /###\s*🎬\s*\*\*NOTAS DE PRODUCCI[OÓ]N/i,
-      /###\s*(?:👤|📊|🏷️|💡|📋)/
-    );
+    // ── Production notes ──
+    const productionNotes = extractFlexibleSection(block, productionHeaderRe);
 
-    // Extract brief
-    const brief = extractSection(
-      block,
-      /###\s*👤\s*\*\*BRIEF/i,
-      /###\s*(?:📊|🏷️|💡|📋)/
-    );
+    // ── Brief ──
+    const brief = extractFlexibleSection(block, briefHeaderRe);
 
-    // Clean up production notes - remove markdown formatting
+    // Clean up production notes
     const cleanNotes = productionNotes
       .split("\n")
       .map((l) => l.replace(/\*\*/g, "").replace(/^[-•]\s*/, "").trim())
@@ -773,10 +813,13 @@ function parseRawReplicas(rawText: string): ParsedReplicas | null {
       .filter(Boolean)
       .join("\n");
 
+    // Parse script lines (timestamped or plain)
+    const parsedScriptLines = scriptText ? parseTimestampedScript(scriptText) : [];
+
     return {
       hook,
       scriptText,
-      scriptLines: scriptText ? parseTimestampedScript(scriptText) : [],
+      scriptLines: parsedScriptLines,
       caption,
       hashtags,
       productionNotes: cleanNotes,
@@ -785,9 +828,9 @@ function parseRawReplicas(rawText: string): ParsedReplicas | null {
   }
 
   return {
-    v1: parseVersionBlock(versionSplits[1] || ""),
-    v2: parseVersionBlock(versionSplits[2] || ""),
-    v3: parseVersionBlock(versionSplits[3] || ""),
+    v1: parseVersionBlock(blocks[1] || ""),
+    v2: parseVersionBlock(blocks[2] || ""),
+    v3: parseVersionBlock(blocks[3] || ""),
   };
 }
 
