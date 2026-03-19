@@ -26,6 +26,10 @@ export interface ReportData {
   teleprompter_script: string | null;
   branding: Branding;
 
+  // Report type (defaults to content-analysis for backward compat)
+  report_type?: ReportType;
+  brand_diagnosis?: BrandDiagnosisData;
+
   // Creator extended
   creator_verified?: boolean;
   creator_bio?: string;
@@ -329,4 +333,81 @@ export interface EvaluationMilestone {
 export interface Branding {
   show_kreoon: boolean;
   primary_color: string;
+}
+
+// ═══ Report Type ═══
+export type ReportType = 'content-analysis' | 'brand-diagnosis';
+
+// ═══ Brand Diagnosis ═══
+export interface BrandDiagnosisData {
+  attendee_email: string;
+  attendee_name: string;
+  meeting_date: string;
+  meeting_title: string;
+  calendar_event_id: string;
+
+  brand_name: string;
+  brand_website: string | null;
+  brand_industry: string;
+  brand_description: string;
+
+  social_profiles: BrandSocialProfile[];
+  posts_analyzed: BrandAnalyzedPost[];
+
+  funnel_coverage: { tofu: number; mofu: number; bofu: number };
+  pillar_distribution: { educar: number; entretener: number; inspirar: number; vender: number };
+  hook_patterns: string[];
+  overall_score: number;
+  scores: {
+    content_quality: number;
+    strategy: number;
+    consistency: number;
+    engagement: number;
+    branding: number;
+  };
+  opportunities: BrandOpportunity[];
+  service_proposal: BrandServiceProposal;
+}
+
+export interface BrandSocialProfile {
+  platform: string;
+  username: string;
+  url: string;
+  followers?: number;
+  posts_per_week?: number;
+  engagement_rate?: number;
+  bio?: string;
+}
+
+export interface BrandAnalyzedPost {
+  url: string;
+  platform: string;
+  caption: string;
+  likes?: number;
+  views?: number;
+  comments?: number;
+  thumbnail_url?: string;
+  published_at?: string;
+  score?: number;
+  analysis?: string;
+  content_type?: string;
+}
+
+export interface BrandOpportunity {
+  title: string;
+  description: string;
+  impact: 'high' | 'medium' | 'low';
+  priority: number;
+}
+
+export interface BrandServiceProposal {
+  packages: {
+    name: string;
+    description: string;
+    includes: string[];
+    price_range: string;
+    ideal_for: string;
+  }[];
+  recommended: string;
+  pricing_note: string;
 }

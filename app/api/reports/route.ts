@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createReport } from '@/lib/reportApi';
 import type { ReportData } from '@/types/report';
 
-// Required top-level fields that Jarvis must always supply
-const REQUIRED_FIELDS: (keyof Omit<ReportData, 'id' | 'created_at' | 'expires_at'>)[] = [
+// Required fields for content-analysis reports
+const CONTENT_REQUIRED_FIELDS: (keyof Omit<ReportData, 'id' | 'created_at' | 'expires_at'>)[] = [
   'platform',
   'content_type',
   'original_url',
@@ -19,6 +19,15 @@ const REQUIRED_FIELDS: (keyof Omit<ReportData, 'id' | 'created_at' | 'expires_at
   'publish_strategy',
   'success_metrics',
   'branding',
+];
+
+// Required fields for brand-diagnosis reports
+const DIAGNOSIS_REQUIRED_FIELDS: (keyof Omit<ReportData, 'id' | 'created_at' | 'expires_at'>)[] = [
+  'platform',
+  'content_type',
+  'creator_username',
+  'branding',
+  'brand_diagnosis',
 ];
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -38,8 +47,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  // ── Validate required fields ──────────────────────────────────────────────
-  const missing = REQUIRED_FIELDS.filter((field) => body[field] === undefined);
+  // ── Validate required fields based on report type ───────────────────────
+  const reportType = body.report_type as string | undefined;
+  const requiredFields = reportType === 'brand-diagnosis'
+    ? DIAGNOSIS_REQUIRED_FIELDS
+    : CONTENT_REQUIRED_FIELDS;
+
+  const missing = requiredFields.filter((field) => body[field] === undefined);
   if (missing.length > 0) {
     return NextResponse.json(
       { error: 'Missing required fields', missing },
