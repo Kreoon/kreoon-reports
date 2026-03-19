@@ -47,9 +47,6 @@ export default function ReportFooter({ reportId, generatedDate }: ReportFooterPr
             <a href="https://instagram.com/alexemprendee" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-white/60 hover:text-[#7c3aed] transition-colors">
               <InstagramIcon className="w-5 h-5" />
             </a>
-            <a href="https://tiktok.com/@alexemprendee" target="_blank" rel="noopener noreferrer" aria-label="TikTok" className="text-white/60 hover:text-[#7c3aed] transition-colors">
-              <TikTokIcon className="w-5 h-5" />
-            </a>
           </div>
 
           <a
