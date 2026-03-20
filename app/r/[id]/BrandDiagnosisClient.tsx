@@ -46,29 +46,20 @@ const ServiceProposal = dynamic(() => import("@/components/diagnosis/ServiceProp
 const DiagnosisFooter = dynamic(() => import("@/components/diagnosis/DiagnosisFooter"), { ssr: false });
 const WhatsAppFloat = dynamic(() => import("@/components/report/WhatsAppFloat"), { ssr: false });
 
-// ── Step definitions ──
-const STEPS = [
-  { id: 1, label: "Tu Marca", icon: "🎯" },
-  { id: 2, label: "Diagnóstico", icon: "📊" },
-  { id: 3, label: "Competencia", icon: "⚔️" },
-  { id: 4, label: "Oportunidades", icon: "💡" },
-  { id: 5, label: "Plan de Acción", icon: "🚀" },
-];
-
 // ── Step navigation ──
-function StepNav({ current, total, onStep }: { current: number; total: number; onStep: (n: number) => void }) {
+function StepNav({ steps, currentIdx, onStepIdx }: { steps: { id: number; label: string; icon: string }[]; currentIdx: number; onStepIdx: (idx: number) => void }) {
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0f]/90 backdrop-blur-md border-b border-zinc-800/50">
       <div className="max-w-4xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-1">
-          {STEPS.slice(0, total).map((step) => (
+          {steps.map((step, idx) => (
             <button
               key={step.id}
-              onClick={() => onStep(step.id)}
+              onClick={() => onStepIdx(idx)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                step.id === current
+                idx === currentIdx
                   ? "bg-kreoon text-white"
-                  : step.id < current
+                  : idx < currentIdx
                   ? "bg-kreoon/20 text-kreoon"
                   : "bg-zinc-800/60 text-gray-500"
               }`}
@@ -82,7 +73,7 @@ function StepNav({ current, total, onStep }: { current: number; total: number; o
         <div className="mt-2 h-0.5 bg-zinc-800 rounded-full overflow-hidden">
           <motion.div
             className="h-full bg-kreoon rounded-full"
-            animate={{ width: `${(current / total) * 100}%` }}
+            animate={{ width: `${((currentIdx + 1) / steps.length) * 100}%` }}
             transition={{ duration: 0.3 }}
           />
         </div>
@@ -130,8 +121,6 @@ interface Props {
 
 export default function BrandDiagnosisClient({ data }: Props) {
   const diagnosis = data.brand_diagnosis;
-  const [step, setStep] = useState(1);
-  const totalSteps = 5;
 
   if (!diagnosis) {
     return (
@@ -141,19 +130,37 @@ export default function BrandDiagnosisClient({ data }: Props) {
     );
   }
 
-  const goNext = () => setStep((s) => Math.min(s + 1, totalSteps));
-  const goPrev = () => setStep((s) => Math.max(s - 1, 1));
+  // Build dynamic steps — hide empty sections
+  const hasCompetitors = diagnosis.competitors && diagnosis.competitors.length > 0;
+  const hasOpportunities = diagnosis.opportunities && diagnosis.opportunities.length > 0;
+
+  const activeSteps = [
+    { id: 1, label: "Tu Marca", icon: "🎯" },
+    { id: 2, label: "Diagnóstico", icon: "📊" },
+    ...(hasCompetitors ? [{ id: 3, label: "Competencia", icon: "⚔️" }] : []),
+    ...(hasOpportunities ? [{ id: 4, label: "Oportunidades", icon: "💡" }] : []),
+    { id: 5, label: "Plan de Acción", icon: "🚀" },
+  ];
+
+  // Remap step IDs to sequential 1..N for navigation
+  const stepIds = activeSteps.map((s) => s.id);
+  const [stepIdx, setStepIdx] = useState(0);
+  const currentStepId = stepIds[stepIdx] || 1;
+  const totalSteps = activeSteps.length;
+
+  const goNext = () => setStepIdx((s) => Math.min(s + 1, totalSteps - 1));
+  const goPrev = () => setStepIdx((s) => Math.max(s - 1, 0));
 
   return (
     <main className="min-h-screen bg-[#0a0a0f] text-white">
-      <StepNav current={step} total={totalSteps} onStep={setStep} />
+      <StepNav steps={activeSteps} currentIdx={stepIdx} onStepIdx={setStepIdx} />
 
       {/* Spacer for fixed nav */}
       <div className="h-20" />
 
       <AnimatePresence mode="wait">
         <motion.div
-          key={step}
+          key={currentStepId}
           initial={{ opacity: 0, x: 40 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -40 }}
@@ -161,7 +168,7 @@ export default function BrandDiagnosisClient({ data }: Props) {
           className="min-h-[calc(100vh-10rem)]"
         >
           {/* Step 1: Tu Marca */}
-          {step === 1 && (
+          {currentStepId === 1 && (
             <>
               <ErrorBoundary fallback={<SectionError name="Hero" />}>
                 <DiagnosisHero diagnosis={diagnosis} />
@@ -173,7 +180,7 @@ export default function BrandDiagnosisClient({ data }: Props) {
           )}
 
           {/* Step 2: Diagnóstico */}
-          {step === 2 && (
+          {currentStepId === 2 && (
             <>
               <ErrorBoundary fallback={<SectionError name="Auditoría" />}>
                 <ContentAudit posts={diagnosis.posts_analyzed} />
@@ -184,8 +191,8 @@ export default function BrandDiagnosisClient({ data }: Props) {
             </>
           )}
 
-          {/* Step 3: Competencia */}
-          {step === 3 && (
+          {/* Step 3: Competencia (only if has data) */}
+          {currentStepId === 3 && (
             <ErrorBoundary fallback={<SectionError name="Competencia" />}>
               <CompetitorAnalysis
                 competitors={diagnosis.competitors || []}
@@ -196,15 +203,15 @@ export default function BrandDiagnosisClient({ data }: Props) {
             </ErrorBoundary>
           )}
 
-          {/* Step 4: Oportunidades */}
-          {step === 4 && (
+          {/* Step 4: Oportunidades (only if has data) */}
+          {currentStepId === 4 && (
             <ErrorBoundary fallback={<SectionError name="Oportunidades" />}>
               <Opportunities opportunities={diagnosis.opportunities} />
             </ErrorBoundary>
           )}
 
           {/* Step 5: Plan de Acción */}
-          {step === 5 && (
+          {currentStepId === 5 && (
             <>
               <ErrorBoundary fallback={<SectionError name="Propuesta" />}>
                 <ServiceProposal
@@ -220,7 +227,7 @@ export default function BrandDiagnosisClient({ data }: Props) {
         </motion.div>
       </AnimatePresence>
 
-      <StepButtons current={step} total={totalSteps} onPrev={goPrev} onNext={goNext} />
+      <StepButtons current={stepIdx + 1} total={totalSteps} onPrev={goPrev} onNext={goNext} />
 
       <ErrorBoundary fallback={null}>
         <WhatsAppFloat />

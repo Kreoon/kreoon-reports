@@ -15,8 +15,8 @@ export default function ServiceProposal({ proposal, brandName }: Props) {
       <div className="card-premium p-6 space-y-6">
         <SectionHeader
           icon={<span className="text-lg">🚀</span>}
-          title="Propuesta de Servicios"
-          subtitle={`Soluciones recomendadas para ${brandName}`}
+          title="Tu Plan de Acción Personalizado"
+          subtitle={`Opciones diseñadas para el momento actual de ${brandName}`}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -86,7 +86,7 @@ export default function ServiceProposal({ proposal, brandName }: Props) {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-kreoon hover:bg-kreoon/90 text-white font-semibold transition-colors"
           >
-            Agendar consultoría →
+            Conversemos sobre tu marca →
           </a>
         </div>
       </div>

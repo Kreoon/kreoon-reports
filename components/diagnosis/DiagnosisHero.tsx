@@ -79,6 +79,15 @@ export default function DiagnosisHero({ diagnosis }: Props) {
           {diagnosis.brand_name}
         </h1>
 
+        {/* Brand description as contextual subtitle */}
+        {diagnosis.brand_description && (
+          <p className="text-base text-gray-400 max-w-2xl mx-auto leading-relaxed">
+            {diagnosis.brand_description.length > 200
+              ? diagnosis.brand_description.slice(0, 200) + "..."
+              : diagnosis.brand_description}
+          </p>
+        )}
+
         {/* Industry */}
         <p className="text-lg text-gray-400">
           {diagnosis.brand_industry}

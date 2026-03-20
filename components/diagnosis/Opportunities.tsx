@@ -27,6 +27,10 @@ export default function Opportunities({ opportunities }: Props) {
           badge={`${opportunities.length}`}
         />
 
+        <p className="text-sm text-gray-400 leading-relaxed">
+          Basándonos en el análisis de tu marca y tu reto actual, estas son las acciones concretas que pueden generar el mayor impacto en los próximos 60-90 días.
+        </p>
+
         <div className="space-y-4">
           {opportunities.map((opp, i) => {
             const impact = IMPACT_CONFIG[opp.impact] || IMPACT_CONFIG.medium;
