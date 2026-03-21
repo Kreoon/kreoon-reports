@@ -46,6 +46,7 @@ const CTABanner = dynamic(() => import('@/components/report/CTABanner'), { ssr: 
 const ReportFooter = dynamic(() => import('@/components/report/ReportFooter'), { ssr: false });
 const ScrollNavbar = dynamic(() => import('@/components/report/ScrollNavbar'), { ssr: false });
 const TeleprompterModal = dynamic(() => import('@/components/report/TeleprompterModal'), { ssr: false });
+const ContentWizard = dynamic(() => import('@/components/diagnosis/ContentWizard'), { ssr: false });
 
 // ── Safe defaults ──
 function safeScores(s: any) {
@@ -392,6 +393,15 @@ export default function ReportPageClient({ data }: { data: ReportData }) {
             <SuccessMetricsSection metrics={successMetrics} />
           </ErrorBoundary>
         )}
+
+        <div className="divider-glow max-w-4xl mx-auto my-2" />
+
+        <ErrorBoundary fallback={<SectionError name="Contenido" />}>
+          <ContentWizard
+            reportId={data.id}
+            brandName={data.creator_username ? `@${data.creator_username}` : 'tu marca'}
+          />
+        </ErrorBoundary>
 
         <ErrorBoundary fallback={null}>
           <CTABanner />

@@ -55,8 +55,8 @@ export async function POST(req: NextRequest, { params }: Params): Promise<NextRe
 
   // Get existing report
   const report = await getReport(id);
-  if (!report || !report.brand_diagnosis) {
-    return NextResponse.json({ error: 'Report not found or not a brand diagnosis' }, { status: 404 });
+  if (!report) {
+    return NextResponse.json({ error: 'Report not found' }, { status: 404 });
   }
 
   // Parse wizard input
@@ -71,16 +71,34 @@ export async function POST(req: NextRequest, { params }: Params): Promise<NextRe
     return NextResponse.json({ error: 'Missing required fields' }, { status: 422 });
   }
 
-  const bd = report.brand_diagnosis;
+  // Build context depending on report type
+  let contextBlock: string;
 
-  // Build context from diagnosis
-  const userMessage = `MARCA: ${bd.brand_name}
+  if (report.brand_diagnosis) {
+    const bd = report.brand_diagnosis;
+    contextBlock = `MARCA: ${bd.brand_name}
 INDUSTRIA: ${bd.brand_industry}
 SCORE GENERAL: ${bd.overall_score}/100
 SCORES: Contenido ${bd.scores.content_quality}, Estrategia ${bd.scores.strategy}, Engagement ${bd.scores.engagement}, Branding ${bd.scores.branding}
-OPORTUNIDADES TOP: ${bd.opportunities.slice(0, 3).map(o => o.title).join(', ')}
-REDES: ${bd.social_profiles.map(p => `${p.platform} @${p.username} (${p.followers || '?'} seg)`).join(', ')}
-HOOK PATTERNS DETECTADOS: ${bd.hook_patterns.join(', ')}
+OPORTUNIDADES TOP: ${bd.opportunities.slice(0, 3).map((o: any) => o.title).join(', ')}
+REDES: ${bd.social_profiles.map((p: any) => `${p.platform} @${p.username} (${p.followers || '?'} seg)`).join(', ')}
+HOOK PATTERNS DETECTADOS: ${bd.hook_patterns.join(', ')}`;
+  } else {
+    // Content-analysis report context
+    const scores = report.scores || {};
+    const strategic = report.strategic_analysis?.raw_text || '';
+    const verdict = report.verdict || {};
+    contextBlock = `CREADOR: @${report.creator_username || 'desconocido'}
+PLATAFORMA ORIGINAL: ${report.platform}
+TIPO DE CONTENIDO: ${report.content_type}
+SCORES: Hook ${scores.hook || 0}/10, Copy ${scores.copy || 0}/10, Estrategia ${scores.strategy || 0}/10, Producción ${scores.production || 0}/10, Viralidad ${scores.virality || 0}/10
+CAPTION ORIGINAL: ${(report.caption || '').slice(0, 300)}
+LO QUE FUNCIONA: ${Array.isArray(verdict.works) ? verdict.works.join(', ') : ''}
+LO QUE MEJORAR: ${Array.isArray(verdict.improve) ? verdict.improve.join(', ') : ''}
+ANÁLISIS ESTRATÉGICO: ${strategic.slice(0, 500)}`;
+  }
+
+  const userMessage = `${contextBlock}
 
 ═══ PEDIDO DEL CLIENTE ═══
 TEMA/PRODUCTO: ${input.topic}
@@ -95,7 +113,7 @@ Genera exactamente ${input.variations} variación(es) de contenido. Cada una con
   try {
     // Call Gemini
     const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -128,13 +146,24 @@ Genera exactamente ${input.variations} variación(es) de contenido. Cada una con
 
     const replicas: ContentReplica[] = JSON.parse(jsonText);
 
-    // Save to report
-    await updateReport(id, {
-      brand_diagnosis: {
-        ...bd,
-        content_replicas: replicas,
-      },
-    } as any);
+    // Save to report (different field depending on report type)
+    if (report.brand_diagnosis) {
+      await updateReport(id, {
+        brand_diagnosis: {
+          ...report.brand_diagnosis,
+          content_replicas: replicas,
+        },
+      } as any);
+    } else {
+      await updateReport(id, {
+        wizard_config: { topic: input.topic, objective: input.objective, platform: input.platform },
+        replicas: {
+          faithful: { hook: replicas[0]?.hook || '', script: replicas[0]?.script || [], caption: replicas[0]?.caption || '', hashtags: replicas[0]?.hashtags?.join(' ') || '', production_notes: replicas[0]?.production_notes || '' },
+          improved: { hook: replicas[1]?.hook || replicas[0]?.hook || '', script: replicas[1]?.script || replicas[0]?.script || [], caption: replicas[1]?.caption || replicas[0]?.caption || '', hashtags: replicas[1]?.hashtags?.join(' ') || '', production_notes: replicas[1]?.production_notes || '', improvements: [], triggers_added: [], neurocopy_changes: [] },
+          kreoon: { hook: replicas[2]?.hook || replicas[0]?.hook || '', script: replicas[2]?.script || replicas[0]?.script || [], caption: replicas[2]?.caption || replicas[0]?.caption || '', hashtags: replicas[2]?.hashtags?.join(' ') || '', production_notes: replicas[2]?.production_notes || '', storybrand: { hero: '', guide: '', plan: '', cta: input.cta, success: '', failure: '' }, creator_brief: { brand: input.topic, product: input.topic, objective: input.objective, platform: input.platform, duration: '30s', key_messages: [], dos: [], donts: [], deliverables: [] } },
+        },
+      } as any);
+    }
 
     return NextResponse.json({ replicas }, { status: 200 });
   } catch (err: unknown) {
