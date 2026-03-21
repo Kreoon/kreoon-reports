@@ -122,8 +122,9 @@ Genera exactamente ${input.variations} variación(es) de contenido. Cada una con
             { role: 'user', parts: [{ text: SYSTEM_PROMPT + '\n\n' + userMessage }] },
           ],
           generationConfig: {
-            maxOutputTokens: 4000,
+            maxOutputTokens: 8000,
             temperature: 0.7,
+            responseMimeType: 'application/json',
           },
         }),
       },
