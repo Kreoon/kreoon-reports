@@ -371,6 +371,31 @@ export interface BrandDiagnosisData {
   ad_library: { brand_ads: BrandAdEntry[]; competitor_ads: BrandAdEntry[] };
   opportunities: BrandOpportunity[];
   service_proposal: BrandServiceProposal;
+
+  // Content wizard (generated on-demand from report page)
+  content_replicas?: ContentReplica[];
+}
+
+// ═══ Content Wizard (Brand Diagnosis) ═══
+export interface ContentWizardInput {
+  topic: string;
+  cta: string;
+  objective: 'alcance' | 'leads' | 'venta' | 'autoridad';
+  platform: 'instagram' | 'tiktok' | 'youtube';
+  tone: 'educativo' | 'entretenido' | 'inspiracional' | 'directo';
+  variations: 1 | 2 | 3;
+}
+
+export interface ContentReplica {
+  version: number;
+  title: string;
+  hook: string;
+  script: ScriptLine[];
+  caption: string;
+  hashtags: string[];
+  production_notes: string;
+  best_time: string;
+  repurposing: string[];
 }
 
 export interface BrandSocialProfile {

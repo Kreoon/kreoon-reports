@@ -33,6 +33,22 @@ export async function createReport(
   return { id, url };
 }
 
+// ─── Update ──────────────────────────────────────────────────────────────────
+
+export async function updateReport(
+  id: string,
+  updates: Partial<ReportData>,
+): Promise<void> {
+  const { error } = await getSupabaseAdmin()
+    .from(process.env.SUPABASE_TABLE || 'jarvis_reports')
+    .update(updates)
+    .eq('id', id);
+
+  if (error) {
+    throw new Error(`Failed to update report: ${error.message}`);
+  }
+}
+
 // ─── Get ─────────────────────────────────────────────────────────────────────
 
 export async function getReport(id: string): Promise<ReportData | null> {

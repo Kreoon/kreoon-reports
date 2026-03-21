@@ -43,6 +43,7 @@ const StrategicDiagnosis = dynamic(() => import("@/components/diagnosis/Strategi
 const CompetitorAnalysis = dynamic(() => import("@/components/diagnosis/CompetitorAnalysis"), { ssr: false });
 const Opportunities = dynamic(() => import("@/components/diagnosis/Opportunities"), { ssr: false });
 const ServiceProposal = dynamic(() => import("@/components/diagnosis/ServiceProposal"), { ssr: false });
+const ContentWizard = dynamic(() => import("@/components/diagnosis/ContentWizard"), { ssr: false });
 const DiagnosisFooter = dynamic(() => import("@/components/diagnosis/DiagnosisFooter"), { ssr: false });
 const WhatsAppFloat = dynamic(() => import("@/components/report/WhatsAppFloat"), { ssr: false });
 
@@ -140,6 +141,7 @@ export default function BrandDiagnosisClient({ data }: Props) {
     ...(hasCompetitors ? [{ id: 3, label: "Competencia", icon: "⚔️" }] : []),
     ...(hasOpportunities ? [{ id: 4, label: "Oportunidades", icon: "💡" }] : []),
     { id: 5, label: "Plan de Acción", icon: "🚀" },
+    { id: 6, label: "Crea Contenido", icon: "🎬" },
   ];
 
   // Remap step IDs to sequential 1..N for navigation
@@ -217,6 +219,19 @@ export default function BrandDiagnosisClient({ data }: Props) {
                 <ServiceProposal
                   proposal={diagnosis.service_proposal}
                   brandName={diagnosis.brand_name}
+                />
+              </ErrorBoundary>
+            </>
+          )}
+
+          {/* Step 6: Crea tu Contenido */}
+          {currentStepId === 6 && (
+            <>
+              <ErrorBoundary fallback={<SectionError name="Contenido" />}>
+                <ContentWizard
+                  reportId={data.id}
+                  brandName={diagnosis.brand_name}
+                  existingReplicas={diagnosis.content_replicas}
                 />
               </ErrorBoundary>
               <ErrorBoundary fallback={<SectionError name="Footer" />}>
