@@ -38,11 +38,16 @@ function SectionError({ name }: { name: string }) {
 // ── Lazy imports ──
 const DiagnosisHero = dynamic(() => import("@/components/diagnosis/DiagnosisHero"), { ssr: false });
 const SocialPresence = dynamic(() => import("@/components/diagnosis/SocialPresence"), { ssr: false });
+const AvatarBuyerPersona = dynamic(() => import("@/components/diagnosis/AvatarBuyerPersona"), { ssr: false });
 const ContentAudit = dynamic(() => import("@/components/diagnosis/ContentAudit"), { ssr: false });
 const StrategicDiagnosis = dynamic(() => import("@/components/diagnosis/StrategicDiagnosis"), { ssr: false });
+const ExecutiveSummary = dynamic(() => import("@/components/diagnosis/ExecutiveSummary"), { ssr: false });
 const CompetitorAnalysis = dynamic(() => import("@/components/diagnosis/CompetitorAnalysis"), { ssr: false });
+const CompetitorDeepAnalysis = dynamic(() => import("@/components/diagnosis/CompetitorDeepAnalysis"), { ssr: false });
+const QuickWins = dynamic(() => import("@/components/diagnosis/QuickWins"), { ssr: false });
 const Opportunities = dynamic(() => import("@/components/diagnosis/Opportunities"), { ssr: false });
 const ServiceProposal = dynamic(() => import("@/components/diagnosis/ServiceProposal"), { ssr: false });
+const ContentStrategyCalendar = dynamic(() => import("@/components/diagnosis/ContentStrategyCalendar"), { ssr: false });
 const ContentWizard = dynamic(() => import("@/components/diagnosis/ContentWizard"), { ssr: false });
 const DiagnosisFooter = dynamic(() => import("@/components/diagnosis/DiagnosisFooter"), { ssr: false });
 const WhatsAppFloat = dynamic(() => import("@/components/report/WhatsAppFloat"), { ssr: false });
@@ -132,7 +137,8 @@ export default function BrandDiagnosisClient({ data }: Props) {
   }
 
   // Build dynamic steps — hide empty sections
-  const hasCompetitors = diagnosis.competitors && diagnosis.competitors.length > 0;
+  const hasCompetitors = (diagnosis.competitors && diagnosis.competitors.length > 0) ||
+    (diagnosis.competitor_deep_analysis && diagnosis.competitor_deep_analysis.length > 0);
   const hasOpportunities = diagnosis.opportunities && diagnosis.opportunities.length > 0;
 
   const activeSteps = [
@@ -178,12 +184,28 @@ export default function BrandDiagnosisClient({ data }: Props) {
               <ErrorBoundary fallback={<SectionError name="Presencia Social" />}>
                 <SocialPresence profiles={diagnosis.social_profiles} />
               </ErrorBoundary>
+              {/* v7: Avatar, Buyer Persona, Brand Identity, Market Position */}
+              <ErrorBoundary fallback={<SectionError name="Avatar y Persona" />}>
+                <AvatarBuyerPersona
+                  avatarIdeal={diagnosis.avatar_ideal}
+                  buyerPersona={diagnosis.buyer_persona}
+                  brandIdentity={diagnosis.brand_identity}
+                  marketPosition={diagnosis.market_position}
+                />
+              </ErrorBoundary>
             </>
           )}
 
           {/* Step 2: Diagnóstico */}
           {currentStepId === 2 && (
             <>
+              {/* v7: Executive Summary */}
+              <ErrorBoundary fallback={<SectionError name="Resumen Ejecutivo" />}>
+                <ExecutiveSummary
+                  summary={diagnosis.executive_summary}
+                  contentAudit={diagnosis.content_audit}
+                />
+              </ErrorBoundary>
               <ErrorBoundary fallback={<SectionError name="Auditoría" />}>
                 <ContentAudit posts={diagnosis.posts_analyzed} />
               </ErrorBoundary>
@@ -195,21 +217,36 @@ export default function BrandDiagnosisClient({ data }: Props) {
 
           {/* Step 3: Competencia (only if has data) */}
           {currentStepId === 3 && (
-            <ErrorBoundary fallback={<SectionError name="Competencia" />}>
-              <CompetitorAnalysis
-                competitors={diagnosis.competitors || []}
-                competitorInsights={diagnosis.competitor_insights || ""}
-                adInsights={diagnosis.ad_insights || ""}
-                adLibrary={diagnosis.ad_library || { brand_ads: [], competitor_ads: [] }}
-              />
-            </ErrorBoundary>
+            <>
+              <ErrorBoundary fallback={<SectionError name="Competencia" />}>
+                <CompetitorAnalysis
+                  competitors={diagnosis.competitors || []}
+                  competitorInsights={diagnosis.competitor_insights || ""}
+                  adInsights={diagnosis.ad_insights || ""}
+                  adLibrary={diagnosis.ad_library || { brand_ads: [], competitor_ads: [] }}
+                />
+              </ErrorBoundary>
+              {/* v7: Deep competitor analysis */}
+              <ErrorBoundary fallback={<SectionError name="Análisis Profundo" />}>
+                <CompetitorDeepAnalysis competitors={diagnosis.competitor_deep_analysis} />
+              </ErrorBoundary>
+            </>
           )}
 
           {/* Step 4: Oportunidades (only if has data) */}
           {currentStepId === 4 && (
-            <ErrorBoundary fallback={<SectionError name="Oportunidades" />}>
-              <Opportunities opportunities={diagnosis.opportunities} />
-            </ErrorBoundary>
+            <>
+              {/* v7: Quick Wins before opportunities */}
+              <ErrorBoundary fallback={<SectionError name="Quick Wins" />}>
+                <QuickWins
+                  quickWins={diagnosis.quick_wins}
+                  stealWorthyIdeas={diagnosis.steal_worthy_ideas}
+                />
+              </ErrorBoundary>
+              <ErrorBoundary fallback={<SectionError name="Oportunidades" />}>
+                <Opportunities opportunities={diagnosis.opportunities} />
+              </ErrorBoundary>
+            </>
           )}
 
           {/* Step 5: Plan de Acción */}
@@ -220,6 +257,10 @@ export default function BrandDiagnosisClient({ data }: Props) {
                   proposal={diagnosis.service_proposal}
                   brandName={diagnosis.brand_name}
                 />
+              </ErrorBoundary>
+              {/* v7: Content Strategy and Calendar */}
+              <ErrorBoundary fallback={<SectionError name="Estrategia de Contenido" />}>
+                <ContentStrategyCalendar contentStrategy={diagnosis.content_strategy} />
               </ErrorBoundary>
             </>
           )}

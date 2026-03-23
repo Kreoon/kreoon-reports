@@ -372,6 +372,85 @@ export interface BrandDiagnosisData {
   opportunities: BrandOpportunity[];
   service_proposal: BrandServiceProposal;
 
+  // ═══ V7 Fields (Prompt Chain) ═══
+  avatar_ideal?: {
+    demographics?: string;
+    pain_points?: string[];
+    desires?: string[];
+    objections?: string[];
+    buying_triggers?: string[];
+    platforms?: string[];
+  };
+  buyer_persona?: {
+    name?: string;
+    age?: number;
+    occupation?: string;
+    daily_routine?: string;
+    decision_factors?: string[];
+    how_discovers_brands?: string;
+  };
+  market_position?: {
+    current_position?: string;
+    ideal_position?: string;
+    niche_size?: string;
+    market_trends?: string[];
+  };
+  brand_identity?: {
+    archetype?: string;
+    current_tone?: string;
+    recommended_tone?: string;
+    differentiator?: string;
+  };
+  content_audit?: {
+    whats_working?: { insight: string; evidence: string }[];
+    whats_failing?: { insight: string; evidence: string }[];
+    featured_posts?: any[];
+    scores_detail?: Record<string, { score: number; justification: string }>;
+    ad_analysis?: {
+      has_ads?: boolean;
+      summary?: string;
+      recommendation?: string;
+    };
+  };
+  content_strategy?: {
+    pillars?: {
+      name: string;
+      percentage: number;
+      description: string;
+      example_posts?: string[];
+    }[];
+    calendar_30d?: {
+      day: number;
+      idea: string;
+      format: string;
+      pillar: string;
+    }[];
+    format_mix?: Record<string, { percentage: number; why: string }>;
+    funnel?: Record<string, { goal: string; formats: string[]; percentage: number }>;
+    best_times?: {
+      days?: string[];
+      hours?: string[];
+      reason?: string;
+    };
+  };
+  competitor_deep_analysis?: {
+    name: string;
+    handle?: string;
+    followers?: number;
+    engagement_rate?: number;
+    strengths?: string[];
+    weaknesses?: string[];
+    dominant_formats?: string[];
+    posting_frequency?: string;
+  }[];
+  executive_summary?: string;
+  quick_wins?: {
+    action: string;
+    expected_impact: string;
+  }[];
+  steal_worthy_ideas?: string[];
+  estimated_roi?: string;
+
   // Content wizard (generated on-demand from report page)
   content_replicas?: ContentReplica[];
 }
