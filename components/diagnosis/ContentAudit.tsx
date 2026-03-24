@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import SectionHeader from "@/components/report/shared/SectionHeader";
 import type { BrandAnalyzedPost } from "@/types/report";
@@ -8,6 +9,39 @@ function formatNumber(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return n.toString();
+}
+
+function formatDate(raw: string): string {
+  try {
+    const d = new Date(raw);
+    if (isNaN(d.getTime())) return raw;
+    return d.toLocaleDateString("es-CO", { day: "numeric", month: "short", year: "numeric" });
+  } catch {
+    return raw;
+  }
+}
+
+const IG_GRADIENT = "from-purple-600 via-pink-500 to-orange-400";
+
+function PostThumbnail({ src, caption, platform }: { src?: string; caption: string; platform: string }) {
+  const [failed, setFailed] = useState(!src);
+  if (!failed && src) {
+    return (
+      <img
+        src={src}
+        alt=""
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+  return (
+    <div className={`w-full h-full bg-gradient-to-br ${platform === "instagram" ? IG_GRADIENT : platform === "tiktok" ? "from-cyan-400 to-pink-500" : "from-red-500 to-red-700"} flex items-center justify-center p-3`}>
+      <p className="text-white text-xs text-center line-clamp-4 font-medium leading-relaxed drop-shadow-md">
+        {caption || (platform === "instagram" ? "Post de Instagram" : "Post")}
+      </p>
+    </div>
+  );
 }
 
 interface ContentAuditV7 {
@@ -154,19 +188,9 @@ export default function ContentAudit({ posts, contentAudit }: Props) {
                 transition={{ delay: i * 0.08 }}
                 className="relative rounded-xl bg-zinc-900 border border-zinc-800 overflow-hidden group"
               >
-                {/* Thumbnail or placeholder */}
+                {/* Thumbnail with fallback */}
                 <div className="aspect-[9/16] max-h-48 bg-zinc-800 relative overflow-hidden">
-                  {post.thumbnail_url ? (
-                    <img
-                      src={post.thumbnail_url}
-                      alt=""
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-4xl text-zinc-600">
-                      {post.platform === "instagram" ? "📸" : post.platform === "tiktok" ? "🎵" : "▶️"}
-                    </div>
-                  )}
+                  <PostThumbnail src={post.thumbnail_url} caption={post.caption} platform={post.platform} />
 
                   {/* Score badge */}
                   {post.score !== undefined && post.score > 0 && (
@@ -202,7 +226,7 @@ export default function ContentAudit({ posts, contentAudit }: Props) {
 
                   {/* Date */}
                   {post.published_at && (
-                    <p className="text-xs text-gray-500">{post.published_at}</p>
+                    <p className="text-xs text-gray-500">{formatDate(post.published_at)}</p>
                   )}
 
                   {/* Link */}
