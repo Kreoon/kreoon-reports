@@ -485,6 +485,7 @@ export interface BrandSocialProfile {
   posts_per_week?: number;
   engagement_rate?: number;
   bio?: string;
+  verified?: boolean; // true = confirmed via Apify/scraping, false/undefined = from Perplexity (unverified)
 }
 
 export interface BrandAnalyzedPost {

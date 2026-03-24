@@ -207,7 +207,7 @@ export default function BrandDiagnosisClient({ data }: Props) {
                 />
               </ErrorBoundary>
               <ErrorBoundary fallback={<SectionError name="Auditoría" />}>
-                <ContentAudit posts={diagnosis.posts_analyzed} />
+                <ContentAudit posts={diagnosis.posts_analyzed} contentAudit={diagnosis.content_audit} />
               </ErrorBoundary>
               <ErrorBoundary fallback={<SectionError name="Diagnóstico" />}>
                 <StrategicDiagnosis diagnosis={diagnosis} />
