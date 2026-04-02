@@ -23,12 +23,24 @@ function formatDate(raw: string): string {
 
 const IG_GRADIENT = "from-purple-600 via-pink-500 to-orange-400";
 
+function getProxiedSrc(src: string): string {
+  if (
+    src.includes("cdninstagram.com") ||
+    src.includes("instagram.com") ||
+    src.includes("fbcdn.net")
+  ) {
+    return `/api/proxy-image?url=${encodeURIComponent(src)}`;
+  }
+  return src;
+}
+
 function PostThumbnail({ src, caption, platform }: { src?: string; caption: string; platform: string }) {
-  const [failed, setFailed] = useState(!src);
-  if (!failed && src) {
+  const proxiedSrc = src ? getProxiedSrc(src) : undefined;
+  const [failed, setFailed] = useState(!proxiedSrc);
+  if (!failed && proxiedSrc) {
     return (
       <img
-        src={src}
+        src={proxiedSrc}
         alt=""
         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         onError={() => setFailed(true)}
@@ -227,6 +239,38 @@ export default function ContentAudit({ posts, contentAudit }: Props) {
                   {/* Date */}
                   {post.published_at && (
                     <p className="text-xs text-gray-500">{formatDate(post.published_at)}</p>
+                  )}
+
+
+                  {/* Enriched analysis data */}
+                  {post.hook_text && (
+                    <p className="text-xs text-amber-300 line-clamp-2">
+                      <span className="mr-1">&#129293;</span>{post.hook_text}
+                    </p>
+                  )}
+                  {post.cta_text && (
+                    <p className="text-xs text-blue-300 line-clamp-1">
+                      <span className="mr-1">&#128227;</span>{post.cta_text}
+                    </p>
+                  )}
+                  {post.transcription && post.transcription.toLowerCase() !== "sin audio" && (
+                    <p className="text-xs text-gray-400 line-clamp-2">
+                      <span className="mr-1">&#127897;&#65039;</span>{post.transcription.slice(0, 100)}{post.transcription.length > 100 ? "…" : ""}
+                    </p>
+                  )}
+                  {(post.tone_of_voice || post.production_quality) && (
+                    <div className="flex flex-wrap gap-1">
+                      {post.tone_of_voice && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-violet-900/50 text-violet-300 border border-violet-700/40">
+                          {post.tone_of_voice}
+                        </span>
+                      )}
+                      {post.production_quality && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-gray-400 border border-zinc-700/40">
+                          {post.production_quality}
+                        </span>
+                      )}
+                    </div>
                   )}
 
                   {/* Link */}

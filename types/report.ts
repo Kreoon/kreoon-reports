@@ -500,6 +500,17 @@ export interface BrandAnalyzedPost {
   score?: number;
   analysis?: string;
   content_type?: string;
+  // Enriched analysis fields
+  hook_text?: string;
+  hook_technique?: string;
+  cta_text?: string;
+  cta_type?: string;
+  transcription?: string;
+  tone_of_voice?: string;
+  production_quality?: string;
+  format_type?: string;
+  content_themes?: string[];
+  text_on_screen?: string;
 }
 
 export interface BrandOpportunity {
