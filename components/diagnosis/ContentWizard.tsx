@@ -5,6 +5,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import SectionHeader from "@/components/report/shared/SectionHeader";
 import type { ContentWizardInput, ContentReplica, ReplicaMode, ReplicaAngle } from "@/types/report";
 
+type AlexPilar = 'dios' | 'estrategia' | 'ia' | 'proceso' | 'vida';
+
+const ALEX_PILARES: { value: AlexPilar; label: string; emoji: string; short: string }[] = [
+  { value: "dios", emoji: "✝️", label: "Mi Caminar con Dios", short: "Fe aterrizada al emprendimiento. Testimonio real." },
+  { value: "estrategia", emoji: "🎯", label: "Mi Experticia en Estrategia", short: "Frameworks, modelos de negocio, errores y aciertos." },
+  { value: "ia", emoji: "🤖", label: "Mi Experticia en IA", short: "Prompts, workflows, casos de uso. Sin código." },
+  { value: "proceso", emoji: "🔨", label: "Mi Proceso y Proyectos", short: "Behind the scenes de Kreoon, UGC Colombia, Infiny." },
+  { value: "vida", emoji: "🌱", label: "Mi Vida Real", short: "El humano. Rutinas, familia, Bogotá, descanso." },
+];
+
 // ── Constantes ────────────────────────────────────────────────────────────────
 
 const MODES: { value: ReplicaMode; label: string; emoji: string; desc: string }[] = [
@@ -75,7 +85,7 @@ export default function ContentWizard({ reportId, brandName, existingReplicas }:
     if (mode === "brand") return !!form.brand_name?.trim();
     if (mode === "niche") return !!form.new_niche?.trim();
     if (mode === "angle") return !!form.new_angle;
-    if (mode === "alex") return true;
+    if (mode === "alex") return !!form.alex_pilar;
     return false;
   };
 
@@ -269,17 +279,42 @@ export default function ContentWizard({ reportId, brandName, existingReplicas }:
           )}
 
           {mode === "alex" && (
-            <div className="bg-zinc-900 border border-kreoon/30 rounded-xl p-5 space-y-3">
-              <p className="text-sm text-white font-medium">
-                Se usará la voz de <span className="text-kreoon">Alexander Cast</span>:
-              </p>
-              <ul className="text-xs text-gray-400 space-y-1 pl-4 list-disc">
-                <li>5 pilares: Dios (25%) · IA (25%) · Estrategia (20%) · Emprendimiento (20%) · Historia (10%)</li>
-                <li>Estilo colombiano paisa, frases cortas, preguntas retóricas</li>
-                <li>Tagline: "Dios. Estrategia. IA."</li>
-                <li>Hook patterns: "Yo estaba quebrado y...", "Lo que nadie te dice...", "Le pedí a Claude que..."</li>
-              </ul>
-              <div className="pt-2">
+            <div className="space-y-5">
+              <div className="bg-gradient-to-r from-kreoon/10 to-transparent border border-kreoon/30 rounded-xl p-4">
+                <p className="text-sm text-white font-medium mb-1">
+                  Voz de <span className="text-kreoon">Alexander Cast</span> — "Dios. Estrategia. IA."
+                </p>
+                <p className="text-xs text-gray-400">
+                  Elige UN pilar. NO se mezclan (el contenido queda enfocado en un solo tema).
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-3">Pilar del contenido *</label>
+                <div className="space-y-2">
+                  {ALEX_PILARES.map((p) => (
+                    <button
+                      key={p.value}
+                      onClick={() => update("alex_pilar", p.value as any)}
+                      className={`w-full p-3 rounded-xl border text-left transition-all ${
+                        form.alex_pilar === p.value
+                          ? "border-kreoon bg-kreoon/10 text-white"
+                          : "border-zinc-700 bg-zinc-900 text-gray-400 hover:border-zinc-600"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="text-xl">{p.emoji}</span>
+                        <div className="flex-1">
+                          <div className="font-semibold text-sm">{p.label}</div>
+                          <div className="text-xs opacity-70 mt-0.5">{p.short}</div>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Tema (opcional)</label>
                 <input
                   type="text"
@@ -371,11 +406,12 @@ export default function ContentWizard({ reportId, brandName, existingReplicas }:
   if (step === 3) {
     const mode = form.mode || "brand";
     const modeLabel = MODES.find((m) => m.value === mode)?.label;
+    const pilarLabel = ALEX_PILARES.find((p) => p.value === form.alex_pilar)?.label;
     const contextSummary =
       mode === "brand" ? `${form.brand_name}${form.product ? ` · ${form.product}` : ""}`
       : mode === "niche" ? `${form.new_niche}${form.target_audience ? ` · ${form.target_audience}` : ""}`
       : mode === "angle" ? `${form.new_angle}${form.topic ? ` · ${form.topic}` : ""}`
-      : "Voz Alexander Cast";
+      : `Voz Alexander · ${pilarLabel || "pilar sin elegir"}`;
 
     return (
       <section className="max-w-4xl mx-auto px-4 py-10">

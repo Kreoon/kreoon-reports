@@ -482,7 +482,8 @@ export interface ContentWizardInput {
   // Mode 'angle' — mismo tema, ángulo distinto
   new_angle?: ReplicaAngle;
 
-  // Mode 'alex' — usa perfil Alexander Cast (sin inputs extra)
+  // Mode 'alex' — usa perfil Alexander Cast. Requiere elegir UN pilar
+  alex_pilar?: 'dios' | 'estrategia' | 'ia' | 'proceso' | 'vida';
 
   // Legacy / fallback para brand-diagnosis reports
   topic?: string;

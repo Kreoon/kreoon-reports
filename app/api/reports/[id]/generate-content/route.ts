@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getReport, updateReport } from '@/lib/reportApi';
 import { callLLM, extractJSON } from '@/lib/llm';
-import { ALEXANDER_VOICE_PROFILE } from '@/lib/voice-profile';
+import { buildAlexPrompt, PILARES } from '@/lib/voice-profile';
 import type { ContentWizardInput, ContentReplica, ReplicaMode } from '@/types/report';
 
 // Vercel: aumentar timeout para fallback chain (default 10s, max 60s en free/hobby)
@@ -13,7 +13,7 @@ interface Params {
 
 // ─── System prompts por modo ────────────────────────────────────────────────
 
-function buildSystemPrompt(mode: ReplicaMode, variations: number, platform: string): string {
+function buildSystemPrompt(mode: ReplicaMode, variations: number, platform: string, alexPilar?: string): string {
   const base = `Eres un estratega de contenido senior en Kreoon (agencia UGC Colombia).
 
 Tu tarea: generar EXACTAMENTE ${variations} variación(es) de guión listo para grabar, basándote en el análisis completo del video de referencia que viene en el bloque CONTEXTO.
@@ -79,15 +79,16 @@ Aprovecha los "gatillos faltantes" que detectó el análisis estratégico.`;
     case 'alex':
       return base + `
 
-═══ MODO: VOZ ALEXANDER CAST ═══
-Adapta el guión a la voz y personalidad de Alexander Cast (marca personal).
+═══ MODO: VOZ ALEXANDER CAST — PILAR ÚNICO ═══
+Adapta el guión a la voz de Alexander Cast usando EXCLUSIVAMENTE el pilar elegido.
+NO mezcles contenido de pilares (si el pilar es Dios, no hables de IA).
 
-${ALEXANDER_VOICE_PROFILE}
+${buildAlexPrompt(alexPilar as any)}
 
 Instrucciones:
-- Elige 1-2 pilares relevantes al tema (nunca los 5 a la vez).
-- Mantén el hook pattern del original PERO reescribe en la voz de Alexander.
-- Cierra SIEMPRE con propósito (fe, estrategia o IA + resultado).`;
+- Usa SOLO los temas, vocabulario y patrones de hook del pilar activo.
+- Mantén la estructura del video original pero reescribe al pilar.
+- Respeta las prohibiciones del pilar (NO HACER).`;
   }
 }
 
@@ -207,8 +208,16 @@ export async function POST(req: NextRequest, { params }: Params): Promise<NextRe
     return NextResponse.json({ error: 'Mode niche requires new_niche' }, { status: 422 });
   }
 
+  // Si modo es alex, validar que venga el pilar
+  if (mode === 'alex' && !input.alex_pilar) {
+    return NextResponse.json({
+      error: 'Mode alex requires alex_pilar: dios|estrategia|ia|proceso|vida',
+      available_pilares: Object.values(PILARES).map(p => ({ id: p.id, label: p.label, short: p.short })),
+    }, { status: 422 });
+  }
+
   const contextBlock = buildContextBlock(report);
-  const systemPrompt = buildSystemPrompt(mode, input.variations, input.platform);
+  const systemPrompt = buildSystemPrompt(mode, input.variations, input.platform, input.alex_pilar);
   const userMessage = buildUserMessage({ ...input, mode }, contextBlock);
 
   try {
