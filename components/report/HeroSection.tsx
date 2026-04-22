@@ -101,16 +101,18 @@ function getSocialEmbedUrl(originalUrl: string, platform: ReportData["platform"]
   if (platform === "instagram") {
     const match = originalUrl.match(/\/p\/([A-Za-z0-9_-]+)/);
     if (match) return `https://www.instagram.com/p/${match[1]}/embed/`;
-    // Also handle /reel/ URLs
     const reelMatch = originalUrl.match(/\/reel\/([A-Za-z0-9_-]+)/);
     if (reelMatch) return `https://www.instagram.com/p/${reelMatch[1]}/embed/`;
   }
   if (platform === "tiktok") {
+    // Canonical: /video/NUMERIC_ID (incluye /@user/video/ID y /embed/v2/ID)
     const match = originalUrl.match(/\/video\/(\d+)/);
     if (match) return `https://www.tiktok.com/embed/v2/${match[1]}`;
+    // Shortlinks vt.tiktok.com/XXX o tiktok.com/t/XXX no contienen video id numérico
+    // — no podemos embebir directamente sin resolver el shortlink.
+    // Retornamos null; el UI mostrará el thumbnail + link al original.
   }
   if (platform === "youtube") {
-    // Handle youtu.be/ID, youtube.com/watch?v=ID, youtube.com/shorts/ID
     let videoId: string | null = null;
     const shortMatch = originalUrl.match(/youtu\.be\/([A-Za-z0-9_-]+)/);
     const longMatch = originalUrl.match(/[?&]v=([A-Za-z0-9_-]+)/);
@@ -119,6 +121,15 @@ function getSocialEmbedUrl(originalUrl: string, platform: ReportData["platform"]
     else if (longMatch) videoId = longMatch[1];
     else if (shortsMatch) videoId = shortsMatch[1];
     if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+  }
+  if (platform === "twitter") {
+    // Twitter/X embed via oEmbed URL (requires Twitter JS, fallback to link)
+    return null;
+  }
+  if (platform === "facebook") {
+    // Facebook video embed
+    const match = originalUrl.match(/videos?\/(\d+)/);
+    if (match) return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(originalUrl)}`;
   }
   return null;
 }
@@ -363,7 +374,7 @@ export default function HeroSection({ data, effectiveScores, viewsEstimated, est
               }}
             >
               {/* 9:16 aspect ratio container */}
-              <div className="rounded-[14px] overflow-hidden bg-black" style={{ aspectRatio: "9/16" }}>
+              <div className="rounded-[14px] overflow-hidden bg-black relative" style={{ aspectRatio: "9/16" }}>
                 {socialEmbedUrl ? (
                   <iframe
                     src={socialEmbedUrl}
@@ -372,6 +383,25 @@ export default function HeroSection({ data, effectiveScores, viewsEstimated, est
                     title="Video de contenido analizado"
                     allowFullScreen
                   />
+                ) : data.thumbnail_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <a
+                    href={original_url || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full h-full group"
+                  >
+                    <img
+                      src={`/api/proxy-image?url=${encodeURIComponent(data.thumbnail_url)}`}
+                      alt="Thumbnail del video"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="bg-white/95 text-black rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2">
+                        <ExternalLink size={14} /> Ver en {pLabel}
+                      </div>
+                    </div>
+                  </a>
                 ) : drive_media_id ? (
                   <DriveEmbed driveMediaId={drive_media_id} platform={platform} />
                 ) : (
