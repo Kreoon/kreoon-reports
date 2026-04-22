@@ -455,14 +455,37 @@ export interface BrandDiagnosisData {
   content_replicas?: ContentReplica[];
 }
 
-// ═══ Content Wizard (Brand Diagnosis) ═══
+// ═══ Content Wizard — Modos de réplica ═══
+export type ReplicaMode = 'brand' | 'niche' | 'angle' | 'alex';
+export type ReplicaAngle = 'contrarian' | 'mainstream' | 'educativo' | 'emocional' | 'storytelling';
+
 export interface ContentWizardInput {
-  topic: string;
+  /** Modo de réplica. Default 'brand' para backwards compat. */
+  mode?: ReplicaMode;
+
+  // Campos comunes a todos los modos
   cta: string;
   objective: 'alcance' | 'leads' | 'venta' | 'autoridad';
   platform: 'instagram' | 'tiktok' | 'youtube';
   tone: 'educativo' | 'entretenido' | 'inspiracional' | 'directo';
   variations: 1 | 2 | 3;
+
+  // Mode 'brand' — otra marca (personal o comercial) con el mismo producto
+  brand_name?: string;
+  brand_type?: 'personal' | 'comercial';
+  product?: string;
+
+  // Mode 'niche' — mismo formato, nicho distinto
+  new_niche?: string;
+  target_audience?: string;
+
+  // Mode 'angle' — mismo tema, ángulo distinto
+  new_angle?: ReplicaAngle;
+
+  // Mode 'alex' — usa perfil Alexander Cast (sin inputs extra)
+
+  // Legacy / fallback para brand-diagnosis reports
+  topic?: string;
 }
 
 export interface ContentReplica {
