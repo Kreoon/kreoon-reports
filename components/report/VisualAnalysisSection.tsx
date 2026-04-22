@@ -470,7 +470,13 @@ export default function VisualAnalysisSection({ gemini, geminiProductionSpecs, g
       />
 
       {(() => {
-        const transcriptionText = gemini.transcription || gemini.full_analysis;
+        const rawText = gemini.transcription || gemini.full_analysis;
+        // Filtrar mensajes de error legacy ("(Análisis visual no disponible: …)")
+        const isErrorString = typeof rawText === 'string' && (
+          rawText.startsWith('(Análisis visual no disponible') ||
+          rawText.includes('Request failed with status code')
+        );
+        const transcriptionText = isErrorString ? '' : rawText;
         const hasTranscription = !!transcriptionText;
         const hasProductionData = gemini.production && (
           gemini.production.lighting ||
